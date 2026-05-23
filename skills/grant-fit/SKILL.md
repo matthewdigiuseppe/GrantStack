@@ -33,7 +33,7 @@ Read `.grantstack/config.yaml` for `grant.scheme`, `pi.phd_year`, `pi.eligibilit
 
 4. **Host endorsement and fit.** "Will your host actively back this — letter, space, cost-sharing — and does the project need *this* host?" — A lukewarm host signals weak prospects to the panel. ERC/NWO both weigh institutional commitment.
 
-5. **Competitiveness, honestly.** "Against the typical funded PI in this scheme and panel, where is your profile strong and where is it thin?" — Track record, independence, and ground-breaking potential. If the honest answer is "thin on independence", that's a Vidi this year and a Vici later, not a Vici now.
+5. **Competitiveness, honestly.** "Against the typical funded PI in this scheme and panel, where is your profile strong and where is it thin?" — Track record, independence, and ground-breaking potential. If the honest answer is "thin on independence", that's a Vidi this year and a Vici later, not a Vici now. Note the scheme's first cut: some schemes gate on the *person* before the project — e.g., recent NWO Vici rounds assess the pre-proposal largely on "quality of the researcher" — so if the track record won't clear that bar, the project's brilliance won't be reached. (Confirm the current weighting against the call.)
 
 6. **Timeline to deadline.** "How many weeks to the deadline, and is that enough for a proposal that survives a generalist panel and an interview?" — A rushed big-grant proposal reads rushed. Name the longest pole (track record narrative, letters, ethics clearance).
 

@@ -5,10 +5,12 @@ applicant" half of the score — judged together with the project, not after it.
 
 ## Scheme notes
 
-- **ERC** wants a CV plus a *ten-year track record*: a curated list of your most
-  significant achievements (selected publications, monographs, major datasets,
-  invited keynotes, prizes, supervision, leadership), each chosen to evidence
-  that you can deliver something ground-breaking.
+- **ERC** wants a *CV and Track Record* section: a CV plus a curated set of your
+  most significant achievements (selected publications, monographs, major
+  datasets, invited keynotes, prizes, supervision, leadership), each chosen to
+  evidence independence and that you can deliver something ground-breaking.
+  Follow the current call's exact CV format — it has changed across recent work
+  programmes.
 - **NWO** wants a CV plus a key-output list and an academic-profile narrative;
   the committee weighs "quality of the researcher" explicitly.
 

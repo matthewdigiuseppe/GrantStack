@@ -1,6 +1,6 @@
 ---
 name: track-record
-description: Builds the PI track-record / CV narrative — the "excellence of the applicant" half of the score — selecting and framing achievements to evidence ground-breaking capacity, not dumping a CV. Scheme-aware (ERC ten-year track record vs. NWO CV + key output). Writes cv/track-record.md and proposal/sections/pi-track-record.tex.
+description: Builds the PI track-record / CV narrative — the "excellence of the applicant" half of the score — selecting and framing achievements to evidence ground-breaking capacity, not dumping a CV. Scheme-aware (ERC "CV and Track Record" section vs. NWO CV + key output). Writes cv/track-record.md and proposal/sections/pi-track-record.tex.
 user-invocable: true
 allowed-tools:
   - Read
@@ -24,14 +24,14 @@ Once the project is taking shape. In ERC and NWO the **person and the project ar
 
 2. **Select against the project.** From the raw material, choose the achievements that evidence the specific capacities this project demands — the method you've pioneered, the independence you've shown, the hard problems you've cracked. Cut anything that doesn't build the case, however nice.
 
-3. **Frame each achievement with its significance.** Not "published in X" but "established Y, now the basis for Z." For ERC's ten-year track record, pick the ~10 items (papers, monographs, datasets, talks, prizes, supervision, leadership) that together tell one story: this person opens new ground.
+3. **Frame each achievement with its significance.** Not "published in X" but "established Y, now the basis for Z." For ERC's "CV and Track Record" section, choose a curated set of achievements (papers, monographs, datasets, talks, prizes, supervision, leadership) that together tell one story: this person opens new ground. Follow the call's current CV format and item counts from `call-spec` — the exact structure has changed across recent work programmes, so don't assume a fixed number.
 
 4. **Evidence independence and leadership.** Last-author/sole work, own funding, group built, infrastructure created, students graduated. These tell the panel you can run the group the grant funds.
 
 5. **Handle the career arc honestly.** Use eligibility extensions and any non-linear path as context, not apology. Show trajectory and momentum.
 
 6. **Match the scheme's format.**
-   - **ERC** — CV + funding ID + the curated ten-year track record list.
+   - **ERC** — the "CV and Track Record" section (CV, funding ID, and a curated set of achievements evidencing independence and ground-breaking capacity), per the current call's format.
    - **NWO** — CV + key-output list + academic-profile narrative.
    Follow the call's structure exactly (from `call-spec`).
 

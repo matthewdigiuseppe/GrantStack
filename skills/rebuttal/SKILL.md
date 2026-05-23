@@ -1,6 +1,6 @@
 ---
 name: rebuttal
-description: Drafts the response to referee reports (NWO rebuttal stage; ERC step-1→step-2 and resubmission framing), mapping every referee point to a concrete answer without conceding the ambition. Writes reviews/rebuttal/<round>-rebuttal.md. Analog to MStack's /r-and-r, calibrated to grant panels.
+description: Drafts the written response to referee reports for schemes that grant a right of reply — chiefly the NWO Talent rebuttal stage — mapping every referee point to a concrete answer without conceding the ambition. (ERC has no written rebuttal; its step-2 reply is the interview, so use /interview-prep there.) Writes reviews/rebuttal/<round>-rebuttal.md. Analog to MStack's /r-and-r, calibrated to grant panels.
 user-invocable: true
 allowed-tools:
   - Read
@@ -17,7 +17,7 @@ allowed-tools:
 
 ## When to invoke
 
-You've received referee reports and have a right of reply before the decision or interview. NWO Talent schemes have a formal **rebuttal** stage; the same discipline applies to an ERC step-2 cover or a resubmission's "response to previous evaluation." This is high-leverage: a strong rebuttal turns a borderline into a fundable, and a defensive one confirms the doubts.
+You've received written referee reports and the scheme grants a right of reply before the decision or interview. NWO Talent schemes have a formal **rebuttal** stage; this skill is built for that. ERC does **not** take a written rebuttal — at step 2 you reply to the referees *in the interview*, so there the output of this skill feeds `/interview-prep` rather than a submitted document. A strong rebuttal turns a borderline into a fundable; a defensive one confirms the doubts.
 
 ## Argument
 
