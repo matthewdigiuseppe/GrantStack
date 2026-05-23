@@ -1,0 +1,46 @@
+% GrantStack proposal template.
+% /draft-section writes into sections/<name>.tex; this file just \input{}s them.
+% Page limits are scheme-specific — check your call. ERC CoG: B1 extended
+% synopsis <=5pp + B2 scientific proposal <=14pp. NWO VICI: see the call's
+% section limits. Trim to fit; the limit is a hard gate, not a target.
+
+\documentclass[11pt]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage[colorlinks=true,allcolors=blue]{hyperref}
+\usepackage{natbib}
+
+\title{ACRONYM --- TITLE}
+\author{PI NAME \\ HOST INSTITUTION}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+% --- The single most-read page. Written for the generalist panel. ---
+\input{sections/synopsis}
+
+% --- The scientific case. Written for the in-field referee. ---
+\input{sections/state-of-art}
+\input{sections/objectives}
+\input{sections/methodology}
+\input{sections/workpackages}
+\input{sections/feasibility}
+
+% --- The person. ---
+\input{sections/pi-track-record}
+
+% --- Impact / knowledge utilisation (mandatory in NWO; framed as broader
+%     impact in ERC). ---
+\input{sections/impact}
+
+% --- Compliance annexes. ---
+\input{sections/data-management}
+\input{sections/ethics}
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\end{document}
