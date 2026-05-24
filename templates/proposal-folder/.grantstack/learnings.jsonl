@@ -1,0 +1,4 @@
+{"_comment": "One JSON object per line. Append proposal-specific conventions Claude should remember. Examples below — delete and replace."}
+{"kind": "convention", "fact": "The acronym is QUANTA; use it, not the long title, in section headers."}
+{"kind": "decision", "fact": "Framing the ambition as a paradigm shift in X, not an incremental gain over Y."}
+{"kind": "preference", "fact": "Panel is ERC SH2; assume reviewers are social scientists but not in my subfield."}

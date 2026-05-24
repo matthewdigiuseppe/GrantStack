@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# grantstack-upgrade — pull latest GrantStack from GitHub and re-run setup.
+set -euo pipefail
+
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+GS_ROOT="$(cd "$HERE/.." && pwd)"
+
+if [[ ! -d "$GS_ROOT/.git" ]]; then
+  echo "GrantStack root at $GS_ROOT is not a git checkout; cannot upgrade." >&2
+  exit 1
+fi
+
+echo "Pulling latest GrantStack..."
+git -C "$GS_ROOT" pull --ff-only
+
+echo "Re-running setup..."
+"$GS_ROOT/setup"
+
+echo "Upgrade done."

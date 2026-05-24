@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# grantstack-init <grant-name> [--scheme <scheme>]
+# Scaffolds a new proposal folder from GrantStack's templates/proposal-folder/ tree.
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: grantstack-init <grant-name> [--scheme <scheme>]
+
+Creates a new GrantStack proposal folder under the current working directory.
+  --scheme <scheme>   Pre-stamp the funding scheme into config.yaml.
+                      One of: erc-stg | erc-cog | erc-adg | nwo-veni |
+                      nwo-vidi | nwo-vici | other  (default: unset)
+
+Examples:
+  grantstack-init quantum-aid
+  grantstack-init group-formation-2026 --scheme nwo-vici
+  grantstack-init deep-history --scheme erc-cog
+EOF
+}
+
+if [[ $# -lt 1 || "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  usage
+  exit 0
+fi
+
+NAME="$1"
+shift
+SCHEME=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --scheme) SCHEME="${2:-}"; shift 2 ;;
+    *) echo "Unknown arg: $1" >&2; usage; exit 1 ;;
+  esac
+done
+
+# Resolve GrantStack root (the script lives in bin/, so .. is root).
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+GS_ROOT="$(cd "$HERE/.." && pwd)"
+TEMPLATE="$GS_ROOT/templates/proposal-folder"
+
+if [[ ! -d "$TEMPLATE" ]]; then
+  echo "Template not found at $TEMPLATE" >&2
+  exit 1
+fi
+
+DEST="$(pwd)/$NAME"
+if [[ -e "$DEST" ]]; then
+  echo "Refusing to overwrite existing $DEST" >&2
+  exit 1
+fi
+
+# Copy template (preserve hidden files).
+cp -R "$TEMPLATE" "$DEST"
+
+# Stamp the short_name (and optionally scheme) into config.yaml.
+CFG="$DEST/.grantstack/config.yaml"
+if [[ -f "$CFG" ]]; then
+  tmp="$(mktemp)"
+  awk -v n="$NAME" -v s="$SCHEME" '
+    /^  short_name: ""/ { print "  short_name: \"" n "\""; next }
+    (s != "") && /^  scheme: ""/ { print "  scheme: \"" s "\""; next }
+    { print }
+  ' "$CFG" > "$tmp" && mv "$tmp" "$CFG"
+fi
+
+echo "Scaffolded $DEST"
+echo ""
+echo "Next:"
+echo "  cd $NAME"
+echo "  edit .grantstack/config.yaml (set scheme, deadline, host, acronym, title)"
+echo "  start with /grant-fit (am I eligible and competitive?) or /big-idea"

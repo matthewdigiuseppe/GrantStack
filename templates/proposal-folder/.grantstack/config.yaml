@@ -1,0 +1,38 @@
+## GrantStack per-proposal config.
+## Edit at the start of a proposal; revisit after major decisions.
+
+grant:
+  scheme: ""               # erc-stg | erc-cog | erc-adg | nwo-veni | nwo-vidi | nwo-vici | other
+  acronym: ""              # the memorable project acronym (grants live on these)
+  title: ""                # full project title
+  short_name: ""           # for filenames; e.g. "group-formation"
+  call_deadline: ""        # YYYY-MM-DD
+  host_institution: ""     # the host that signs and administers the grant
+  format: "latex"          # "latex" | "markdown"
+  status: "framing"        # framing | positioning | designing | writing | review | submitted | rebuttal | interview | funded | rejected | resubmitting
+
+pi:
+  name: ""                 # the applicant / principal investigator
+  phd_year: ""             # YYYY — used for eligibility windows (e.g. ERC CoG 7-12y, NWO VICI <=15y)
+  eligibility_notes: ""    # extensions (parental leave, etc.), prior ERC/NWO grants, host endorsement
+
+budget:
+  amount: ""               # e.g. 2000000
+  currency: "EUR"
+  duration_months: ""      # e.g. 60
+
+project:
+  one_sentence_breakthrough: ""   # THE ground-breaking claim, no clauses
+  objectives: []                  # 3-4 high-level objectives; /objectives populates this
+
+decisions:
+  # Append a one-liner every time you make a non-obvious call.
+  # - "2026-05-09: dropped the fieldwork WP; too high-risk for the timeline panel will accept."
+
+voice:
+  # Name of a Claude Code skill that defines your prose voice (tone, rhythm,
+  # vocabulary). GrantStack does not ship one — install or author your own and
+  # put its skill name here. Leave empty to use a generic scholarly-but-vivid
+  # grant voice.
+  writing_style: ""
+  reviewer_style: "grant-reviewer-style"

@@ -1,0 +1,21 @@
+{
+  "name": "grantstack",
+  "description": "A Claude Code plugin for big research-grant writing — an opinionated set of role-based slash commands that walk a major fellowship proposal (ERC, NWO Talent) from idea to interview. Sibling to MStack; inspired by gstack.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Matt DiGiuseppe",
+    "email": "mdigiuseppe@gmail.com"
+  },
+  "license": "MIT",
+  "keywords": [
+    "grants",
+    "fellowships",
+    "erc",
+    "nwo",
+    "vici",
+    "consolidator",
+    "research-funding",
+    "proposal-writing",
+    "peer-review"
+  ]
+}
