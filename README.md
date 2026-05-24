@@ -6,6 +6,22 @@ gstack's wager is that role-based slash commands beat free-form prompting becaus
 
 Think ERC Consolidator and NWO Vici, but the spine generalizes to most large investigator-driven schemes (ANR, DFG, UKRI fellowships).
 
+## Why GrantStack exists
+
+A big research grant is not a long paper, and treating it like one is why strong scientists write losing proposals. Three things make it a different beast, and GrantStack is built around them:
+
+- **You write for two readers at once.** A **generalist panel member** — not in your subfield — reads the whole proposal and *decides whether you are funded*; they read the synopsis and lay summary hardest. An **in-field referee** reads the methodology deeply and prosecutes feasibility and novelty. A proposal that satisfies one and loses the other fails. Skills like `/synopsis-shotgun` and `/lay-summary` serve the panel; `/methodology` and `/feasibility-audit` serve the referee; `/panel-mock` simulates each separately so neither is neglected.
+- **It must be ground-breaking *and* feasible.** These pull against each other, and most rejections live in the gap: too safe earns "excellent but not ground-breaking"; too bold with no plan earns "exciting but not feasible." So one skill enforces each — `/groundbreaking-test` prosecutes the ambition, `/risk-register` and `/feasibility-audit` prosecute the deliverability — and the bold core is defended with fallbacks, never sanded down.
+- **The person is half the score.** ERC and NWO judge the applicant and the project *together*; a brilliant project with a weak case for "why you" loses. `/track-record` treats the CV as an argument, and `/interview-prep` rehearses defending it in the room — because for ERC Consolidator and NWO Vici, the written proposal gets you *invited* and the **interview decides it**.
+
+A "help me write my grant" prompt collapses all of this into one stage, and an undirected assistant defaults to the stage it knows best — prose. GrantStack forces the right question at the right stage instead.
+
+## How it relates to MStack and gstack
+
+[gstack](https://github.com/garrytan/gstack) (Garry Tan) made the original bet for product engineering: a single AI is a worse collaborator than a small team of role-defined ones, each speaking in a defined voice with defined questions. [MStack](https://github.com/matthewdigiuseppe/MStack) ported that bet to academic **papers** — idea → lit → design → analysis → writing → submission. GrantStack is its **sibling for grants** — frame → position → design → write → stress-test → submit/defend → reflect.
+
+The architecture is shared: role-based skills, per-project memory, shotgun-for-divergence / review-for-convergence, edit-safety power tools. What differs is everything domain-specific — the lifecycle, the two-readers discipline, the ground-breaking/feasible tension, the panel-and-interview defense, and the resubmission loop. Use **MStack** when the deliverable is a paper for a journal; use **GrantStack** when it's a proposal for a funder. They're independent plugins; install either or both.
+
 ## Install
 
 GrantStack works in every flavor of Claude Code: the **terminal CLI**, the **Mac and Windows desktop apps**, **Claude Code on the web** (claude.ai/code), and the **VS Code and JetBrains extensions**. The steps are the same in all of them.
@@ -92,6 +108,54 @@ my-grant/
   reviews/{rebuttal/, interview/}
   README.md
 ```
+
+## How it works
+
+Four moving parts do the work:
+
+- **Skills are role-based slash commands.** Each `/command` is a skill that loads a specific voice and a specific procedure — `/groundbreaking-test` *is* the incremental-skeptic reviewer; `/panel-mock generalist` *is* the non-expert panellist. You're not prompting a general assistant; you're calling in the right specialist for the stage you're at. Type `/` in Claude Code to see them, or browse [`docs/skills.md`](docs/skills.md).
+- **`.grantstack/` is the proposal's memory.** Everything durable lives in this folder, not in the chat: `config.yaml` (scheme, deadline, acronym, budget, status), `learnings.jsonl` (conventions Claude should remember — added via `/learn`), and caches of every mock review and audit. Close the session, reopen next week, and the proposal still knows its own breakthrough sentence and what the last panel-mock said. The proposal is the unit; the conversation is disposable.
+- **`config.yaml` steers the skills.** Skills read it to stay scheme-aware (an ERC CoG and an NWO Vici get different framing), to anchor your prose voice (`voice.writing_style`), and to keep the acronym, budget, and status consistent across every section.
+- **`/call-spec` makes the actual call the contract.** Rather than hardcode page limits or eligibility rules that change yearly, you paste the real call document into `/call-spec`; it extracts the hard requirements into a checklist and later audits the proposal against them. This is why the skills can say "confirm against the current call" instead of asserting rules that drift.
+
+Outputs land in predictable files (`proposal/sections/*.tex`, `budget/budget.md`, `reviews/…`), so the proposal folder is a real working tree you can edit by hand, put under git, and hand to a co-applicant — not a chat transcript.
+
+## A worked example
+
+A typical ERC Consolidator run, start to interview:
+
+```
+grantstack-init deep-history --scheme erc-cog     # scaffold the folder
+# fill in .grantstack/config.yaml (PhD year, acronym, deadline, host)
+
+/grant-fit            # eligible (7–12y post-PhD) and competitive? honest verdict
+/call-spec capture    # paste the ERC 2026 call → requirements checklist
+/big-idea             # interrogate the breakthrough: what, why now, why you
+/scope-challenge      # one grant or three? bold enough for CoG?
+
+/state-of-art         # the field, and the specific gap you break open
+/groundbreaking-test  # skeptic argues it's incremental — you defeat the argument
+/objectives           # 3–4 falsifiable objectives with success criteria
+/risk-register        # per bold objective: risk → mitigation → fallback
+
+/workpackage          # WPs, milestones, dependencies, Gantt
+/methodology          # rigorous for the referee, legible for the panel
+/team-resources  /budget  /impact
+
+/draft-section synopsis      # then state-of-art, methodology, …
+/synopsis-shotgun            # 4–6 hooks for the most-read page
+/track-record  /lay-summary  /title-shotgun
+
+/call-spec audit      # page limits, fonts, missing annexes — desk-reject check
+/feasibility-audit    # does budget ↔ WPs ↔ timeline ↔ team close?
+/panel-mock generalist   →   /panel-mock skeptic   →   /mentor-review
+/admin-pack           # declarations, host letter, forms
+
+# … submitted, invited to interview …
+/interview-prep       # the pitch, slide skeleton, and a drilled question bank
+```
+
+For an NWO Vici the shape is the same, with `/rebuttal` slotting in before the interview (Vici grants a written rebuttal stage; ERC does not — there you reply in the interview). If it's rejected: `/retro` to mine the reviews, then `/resubmit` to plan the next attempt without gutting the ambition.
 
 ## Design principles
 
