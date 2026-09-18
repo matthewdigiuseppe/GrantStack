@@ -1,0 +1,16 @@
+{
+  "description": "GrantStack safety enforcement. Backs /grantstack:careful and /grantstack:freeze with real PreToolUse checks, and keeps the call as published and the reports as received read-only.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/grantstack-guard.py\""
+          }
+        ]
+      }
+    ]
+  }
+}

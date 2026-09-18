@@ -1,7 +1,8 @@
 ---
 name: guard
-description: /careful + /freeze combined in one toggle. Maximum-safety mode. Lifted from gstack's /guard via MStack.
-user-invocable: true
+description: Maximum-safety mode — /grantstack:careful plus /grantstack:freeze in one toggle, enforced by the GrantStack hook. Use in the last days before a deadline.
+argument-hint: "[directory]"
+disable-model-invocation: true
 allowed-tools:
   - Read
   - Write
@@ -10,25 +11,20 @@ allowed-tools:
 
 # /grantstack:guard
 
-**Stage:** power
-**Voice:** safety
+**Stage:** power · **Voice:** safety
 
-## Argument
-
-`$ARGUMENTS` — directory to freeze writes to (forwarded to `/freeze`).
+`$ARGUMENTS` is the directory to freeze writes to (as in `/grantstack:freeze`); if omitted, ask which.
 
 ## Procedure
 
-1. Run the equivalent of `/careful` (toggle `careful: true` in `.grantstack/safety.yaml`).
-2. Run the equivalent of `/freeze` with the supplied path (or proposal-folder root if none).
-3. Print the combined state.
+1. Set `careful: true` in `.grantstack/safety.yaml` (as `/grantstack:careful` does).
+2. Set `freeze.path` to the supplied directory (as `/grantstack:freeze` does).
+3. Print the combined state. Both are enforced by the `PreToolUse` hook (`hooks/grantstack-guard.py`): destructive commands prompt for confirmation, writes outside the freeze path are denied.
 
 ## Outputs
 
-- `.grantstack/safety.yaml` with both `careful: true` and `freeze.path` set.
-- Summary: both flags + the freeze target.
+- `.grantstack/safety.yaml` with both `careful: true` and `freeze.path`; summary of both flags + the freeze target.
 
-## When to call other skills
+## Next
 
-- `/unfreeze` to remove just the freeze (careful stays on).
-- `/careful off` to remove just careful (freeze stays on).
+`/grantstack:unfreeze` removes just the freeze (careful stays on); `/grantstack:careful off` removes just careful (freeze stays on).
