@@ -2,7 +2,7 @@
 
 **A Claude Code plugin for big research-grant writing.** Sibling to [MStack](https://github.com/matthewdigiuseppe/MStack); inspired by [gstack](https://github.com/garrytan/gstack).
 
-gstack's wager is that role-based slash commands beat free-form prompting because they force the right questions at the right stage. MStack applied it to journal papers. GrantStack applies it to **big individual research grants** — ERC Starting / Consolidator / Advanced, NWO Veni / Vidi / Vici — where the artifact, the reader, and the bar are all different from a paper. A grant has clear stages — frame, position, design, write, stress-test, submit/defend, reflect — each with its own forcing questions, failure modes, and quality bar. GrantStack ships 33 skills that walk a proposal across all of them.
+gstack's wager is that role-based slash commands beat free-form prompting because they force the right questions at the right stage. MStack applied it to journal papers. GrantStack applies it to **big individual research grants** — ERC Starting / Consolidator / Advanced, NWO Veni / Vidi / Vici — where the artifact, the reader, and the bar are all different from a paper. A grant has clear stages — frame, position, design, write, stress-test, submit, defend, reflect — each with its own forcing questions, failure modes, and quality bar. GrantStack ships 35 skills that walk a proposal across all of them.
 
 Think ERC Consolidator and NWO Vici, but the spine generalizes to most large investigator-driven schemes (ANR, DFG, UKRI fellowships).
 
@@ -10,9 +10,9 @@ Think ERC Consolidator and NWO Vici, but the spine generalizes to most large inv
 
 A big research grant is not a long paper, and treating it like one is why strong scientists write losing proposals. Three things make it a different beast, and GrantStack is built around them:
 
-- **You write for two readers at once.** A **generalist panel member** — not in your subfield — reads the whole proposal and *decides whether you are funded*; they read the synopsis and lay summary hardest. An **in-field referee** reads the methodology deeply and prosecutes feasibility and novelty. A proposal that satisfies one and loses the other fails. Skills like `/synopsis-shotgun` and `/lay-summary` serve the panel; `/methodology` and `/feasibility-audit` serve the referee; `/panel-mock` simulates each separately so neither is neglected.
-- **It must be ground-breaking *and* feasible.** These pull against each other, and most rejections live in the gap: too safe earns "excellent but not ground-breaking"; too bold with no plan earns "exciting but not feasible." So one skill enforces each — `/groundbreaking-test` prosecutes the ambition, `/risk-register` and `/feasibility-audit` prosecute the deliverability — and the bold core is defended with fallbacks, never sanded down.
-- **The person is half the score.** ERC and NWO judge the applicant and the project *together*; a brilliant project with a weak case for "why you" loses. `/track-record` treats the CV as an argument, and `/interview-prep` rehearses defending it in the room — because for ERC Consolidator and NWO Vici, the written proposal gets you *invited* and the **interview decides it**.
+- **You write for two readers at once.** A **generalist panel member** — not in your subfield — reads the whole proposal and *decides whether you are funded*; they read the synopsis and lay summary hardest. An **in-field referee** reads the methodology deeply and prosecutes feasibility and novelty. A proposal that satisfies one and loses the other fails. Skills like `/grantstack:synopsis-shotgun` and `/grantstack:lay-summary` serve the panel; `/grantstack:methodology` and `/grantstack:feasibility-audit` serve the referee; `/grantstack:panel-mock` simulates each separately so neither is neglected.
+- **It must be ground-breaking *and* feasible.** These pull against each other, and most rejections live in the gap: too safe earns "excellent but not ground-breaking"; too bold with no plan earns "exciting but not feasible." So one skill enforces each — `/grantstack:groundbreaking-test` prosecutes the ambition, `/grantstack:risk-register` and `/grantstack:feasibility-audit` prosecute the deliverability — and the bold core is defended with fallbacks, never sanded down.
+- **The person is half the score.** ERC and NWO judge the applicant and the project *together*; a brilliant project with a weak case for "why you" loses. `/grantstack:track-record` treats the CV as an argument, and `/grantstack:interview-prep` rehearses defending it in the room — because for ERC Consolidator and NWO Vici, the written proposal gets you *invited* and the **interview decides it**.
 
 A "help me write my grant" prompt collapses all of this into one stage, and an undirected assistant defaults to the stage it knows best — prose. GrantStack forces the right question at the right stage instead.
 
@@ -35,17 +35,19 @@ Open Claude Code and type these two lines, one at a time, into the chat box:
 /plugin install grantstack@grantstack
 ```
 
-The first line tells Claude Code where to find GrantStack. The second installs it. When both are done, all GrantStack commands — `/grant-fit`, `/big-idea`, `/panel-mock`, and so on — are ready. Type `/plugin` to see what's installed.
+The first line tells Claude Code where to find GrantStack. The second installs it. When both are done, all GrantStack commands — `/grantstack:grant-fit`, `/grantstack:big-idea`, `/grantstack:panel-mock`, and so on — are ready. Type `/plugin` to see what's installed.
 
 ### Step 2 — Start a new proposal
 
-In Claude Code, just ask in plain English:
+In Claude Code, type:
 
-> Please run `grantstack-init quantum-aid --scheme erc-cog` to set up a new GrantStack proposal folder here.
+```
+/grantstack:grantstack-init quantum-aid --scheme erc-cog
+```
 
-(Replace `quantum-aid` with a short name and `erc-cog` with your scheme.) Claude creates the folder with everything in the right place. Then open `.grantstack/config.yaml` and fill in your name, PhD year, the acronym/title, the call deadline, and the host.
+(Replace `quantum-aid` with a short name and `erc-cog` with your scheme — one of `erc-stg`, `erc-cog`, `erc-adg`, `nwo-veni`, `nwo-vidi`, `nwo-vici`, `other`.) Claude creates the folder with everything in the right place. Then open `.grantstack/config.yaml` and fill in your name, PhD year, the acronym and title, the call deadline, and the host.
 
-You're done. From here you'd typically start with `/grant-fit` then `/big-idea`.
+You're done. From here you'd typically start with `/grantstack:grant-fit` then `/grantstack:big-idea`. Lost the thread later? `/grantstack:proposal-status` reads the folder and names the one next step.
 
 ### Power-user alternative (optional, terminal users only)
 
@@ -57,66 +59,76 @@ cd ~/.claude/plugins/grantstack
 ./setup
 ```
 
-`./setup` registers GrantStack with Claude Code and prints one line to paste into your shell config so `grantstack-init my-grant` works in any folder. Skip this if you installed via `/plugin install` above — it does the same job.
+`./setup` registers GrantStack with Claude Code and prints one line to paste into your shell config so `grantstack-init my-grant` works in any folder. Skip this if you installed via `/plugin install` above — it does the same job, and `/grantstack:grantstack-init` works either way.
 
 ## Workflow
 
 | Stage | What you type | What happens |
 |---|---|---|
-| **Frame** | `/grant-fit` | Eligibility + competitiveness interrogation before you commit |
-| | `/big-idea` | Forcing questions: the breakthrough, why now, why you |
-| | `/scope-challenge` | "One grant or three? Too big, or not ground-breaking enough?" |
-| | `/idea-shotgun` | 4-6 framings of the same research programme |
-| | `/call-spec` | Ingests the call's hard rules; later audits the proposal against them |
-| **Position** | `/state-of-art` | Field landscape + the specific gap your breakthrough opens |
-| | `/groundbreaking-test` | Skeptic prosecutes "is this actually ground-breaking?" |
-| | `/objectives` | 3-4 falsifiable objectives with success criteria |
-| | `/risk-register` | High-risk/high-gain: risk → mitigation → fallback |
-| **Design** | `/workpackage` | WPs, milestones, deliverables, dependencies, Gantt |
-| | `/methodology` | Approach: rigorous for the referee, legible for the panel |
-| | `/team-resources` | Who you hire + infrastructure, mapped to WPs |
-| | `/budget` | Cost the WPs within the ceiling; every euro maps to science |
-| | `/impact` | Knowledge-utilisation / impact pathway (weighted in NWO) |
-| **Write** | `/draft-section <name>` | Drafts a section in voice, within the page budget |
-| | `/synopsis-shotgun` | 4-6 hooks for the single most-read page |
-| | `/title-shotgun` | Acronym + title options, ranked |
-| | `/lay-summary` | Plain-language summary for the generalist reader |
-| | `/track-record` | The case for *you* — curated, not a CV dump |
-| **Stress-test** | `/panel-mock [persona]` | Mock review: generalist / expert / skeptic / chair, scored to the call |
-| | `/feasibility-audit` | Internal consistency: objectives ↔ WPs ↔ timeline ↔ team ↔ budget |
-| | `/mentor-review [persona]` | The honest read from an ally |
-| **Submit/Defend** | `/rebuttal` | Response to referee reports without conceding the ambition |
-| | `/interview-prep` | Pitch, slides, and a drilled question bank for the interview |
-| | `/admin-pack` | Declarations, host letter, forms, annexes — checked against the call |
-| **Reflect** | `/retro` | Proposal retrospective; mine the reviews for signal |
-| | `/resubmit` | Plan the next attempt without gutting the bold core |
-| **Power** | `/careful`, `/freeze`, `/guard`, `/unfreeze` | Edit-safety controls |
-| | `/learn` | Per-proposal conventions Claude should remember |
-| | `/grantstack-upgrade` | Self-update |
+| **Setup** | `/grantstack:grantstack-init <name>` | Scaffolds the proposal folder every other skill assumes |
+| **Frame** | `/grantstack:grant-fit` | Eligibility + competitiveness interrogation before you commit |
+| | `/grantstack:big-idea` | Forcing questions: the breakthrough, why now, why you |
+| | `/grantstack:scope-challenge` | "One grant or three? Too big, or not ground-breaking enough?" |
+| | `/grantstack:idea-shotgun` | 4-6 framings of the same research programme |
+| | `/grantstack:call-spec` | Ingests the call's hard rules; later audits the proposal against them |
+| **Position** | `/grantstack:state-of-art` | Field landscape + the specific gap your breakthrough opens |
+| | `/grantstack:groundbreaking-test` | Skeptic prosecutes "is this actually ground-breaking?" |
+| | `/grantstack:objectives` | 3-4 falsifiable objectives with success criteria |
+| | `/grantstack:risk-register` | High-risk/high-gain: risk → mitigation → decision point → fallback |
+| **Design** | `/grantstack:workpackage` | WPs, milestones, deliverables, dependencies, Gantt |
+| | `/grantstack:methodology` | Approach: rigorous for the referee, legible for the panel |
+| | `/grantstack:team-resources` | Who you hire + infrastructure, mapped to WPs |
+| | `/grantstack:budget` | Cost the WPs within the ceiling; every euro maps to science |
+| | `/grantstack:impact` | Knowledge-utilisation / impact pathway (weighted in NWO) |
+| **Write** | `/grantstack:draft-section <name>` | Drafts a section in voice, within the page budget |
+| | `/grantstack:synopsis-shotgun` | 4-6 hooks for the single most-read page |
+| | `/grantstack:title-shotgun` | Acronym + title options, ranked |
+| | `/grantstack:lay-summary` | Plain-language summary for the generalist reader |
+| | `/grantstack:track-record` | The case for *you* — curated, not a CV dump |
+| **Stress-test** | `/grantstack:feasibility-audit` | Internal consistency: objectives ↔ WPs ↔ timeline ↔ team ↔ budget |
+| | `/grantstack:panel-mock [persona]` | Mock review: generalist / expert / skeptic / chair, scored to the call |
+| | `/grantstack:mentor-review [persona]` | The honest read from an ally |
+| | `/grantstack:call-spec audit` | Page limits, format, missing annexes, leftover placeholders |
+| **Submit** | `/grantstack:admin-pack` | Declarations, host letter, forms, annexes — checked against the call |
+| **Defend** | `/grantstack:rebuttal` | Written reply to referee reports (NWO; ERC grants none) |
+| | `/grantstack:interview-prep` | Pitch, slides, and a drilled question bank for the interview |
+| **Reflect** | `/grantstack:retro` | Proposal retrospective; mine the reviews for signal |
+| | `/grantstack:resubmit` | Plan the next attempt without gutting the bold core |
+| **Power** | `/grantstack:proposal-status` | Where it stands, what's stale, and the one next step |
+| | `/grantstack:careful`, `/grantstack:freeze`, `/grantstack:guard`, `/grantstack:unfreeze` | Edit-safety controls, enforced by a PreToolUse hook |
+| | `/grantstack:learn` | Per-proposal conventions Claude should remember |
+| | `/grantstack:grantstack-upgrade` | Self-update |
 
 ## Per-proposal scaffold
 
-`grantstack-init` creates this layout, and every skill assumes it:
+`/grantstack:grantstack-init` creates this layout, and every skill assumes it:
 
 ```
 my-grant/
   .grantstack/{config.yaml, learnings.jsonl, review-cache/, audits/}
-  proposal/{main.tex, refs.bib, sections/}
+  proposal/{main.tex, refs.bib, sections/}      # 11 section stubs, one writer each
   budget/budget.md
   cv/track-record.md
-  admin/{data-management.md, ethics.md, submission-checklist.md}
-  reviews/{rebuttal/, interview/}
-  README.md
+  admin/{data-management.md, ethics.md}
+    call/                                       # the call as published — read-only
+  reviews/
+    received/                                   # reports and panel letters as received — read-only
+    rebuttal/  interview/
+  README.md  .gitignore
 ```
+
+`admin/call/` and `reviews/received/` hold documents you did not write: the guard hook lets you add files there and refuses to edit them, because a corrected copy of a referee report is no longer the record of what the referee said.
 
 ## How it works
 
-Four moving parts do the work:
+Six moving parts do the work:
 
-- **Skills are role-based slash commands.** Each `/command` is a skill that loads a specific voice and a specific procedure — `/groundbreaking-test` *is* the incremental-skeptic reviewer; `/panel-mock generalist` *is* the non-expert panellist. You're not prompting a general assistant; you're calling in the right specialist for the stage you're at. Type `/` in Claude Code to see them, or browse [`docs/skills.md`](docs/skills.md).
-- **`.grantstack/` is the proposal's memory.** Everything durable lives in this folder, not in the chat: `config.yaml` (scheme, deadline, acronym, budget, status), `learnings.jsonl` (conventions Claude should remember — added via `/learn`), and caches of every mock review and audit. Close the session, reopen next week, and the proposal still knows its own breakthrough sentence and what the last panel-mock said. The proposal is the unit; the conversation is disposable.
+- **Skills are role-based slash commands.** Each `/command` is a skill that loads a specific voice and a specific procedure — `/grantstack:groundbreaking-test` *is* the incremental-skeptic reviewer; `/grantstack:panel-mock generalist` *is* the non-expert panellist. You're not prompting a general assistant; you're calling in the right specialist for the stage you're at. Type `/` in Claude Code to see them, or browse [`docs/skills.md`](docs/skills.md).
+- **`.grantstack/` is the proposal's memory.** Everything durable lives in this folder, not in the chat: `config.yaml` (scheme, deadline, acronym, budget, status), `learnings.jsonl` (conventions Claude should remember — added via `/grantstack:learn`), and caches of every mock review and audit. Close the session, reopen next week, and the proposal still knows its own breakthrough sentence and what the last panel-mock said. The proposal is the unit; the conversation is disposable.
 - **`config.yaml` steers the skills.** Skills read it to stay scheme-aware (an ERC CoG and an NWO Vici get different framing), to anchor your prose voice (`voice.writing_style`), and to keep the acronym, budget, and status consistent across every section.
-- **`/call-spec` makes the actual call the contract.** Rather than hardcode page limits or eligibility rules that change yearly, you paste the real call document into `/call-spec`; it extracts the hard requirements into a checklist and later audits the proposal against them. This is why the skills can say "confirm against the current call" instead of asserting rules that drift.
+- **`/grantstack:call-spec` makes the actual call the contract.** Rather than hardcode page limits or eligibility rules that change yearly, you give `/grantstack:call-spec` the real call document; it is kept in `admin/call/`, and the skill extracts the hard requirements into a checklist and later audits the proposal against them. This is why the skills can say "confirm against the current call" instead of asserting rules that drift.
+- **A reference library carries the expertise.** `references/` holds what a strong grants adviser brings to each stage — how the schemes are shaped and who decides what at which step, the conventions of a real panel report, what each section owes the two readers, and the catalog of contradictions panels find between objectives, work packages, timeline, team and budget. Skills load the relevant file at the stage that needs it, so `/grantstack:panel-mock` argues from panel conventions rather than generic taste. See [`docs/skills.md`](docs/skills.md#reference-library).
+- **A status script keeps the folder honest.** `/grantstack:proposal-status` runs one deterministic pass over the folder: which artifacts exist, which are placeholders, which reviews and audits went stale because an input changed after they were written, what stage the files imply, and the single next step. Reopen a proposal after a month and it tells you where you are.
 
 Outputs land in predictable files (`proposal/sections/*.tex`, `budget/budget.md`, `reviews/…`), so the proposal folder is a real working tree you can edit by hand, put under git, and hand to a co-applicant — not a chat transcript.
 
@@ -125,55 +137,60 @@ Outputs land in predictable files (`proposal/sections/*.tex`, `budget/budget.md`
 A typical ERC Consolidator run, start to interview:
 
 ```
-grantstack-init deep-history --scheme erc-cog     # scaffold the folder
+/grantstack:grantstack-init deep-history --scheme erc-cog   # scaffold the folder
 # fill in .grantstack/config.yaml (PhD year, acronym, deadline, host)
 
-/grant-fit            # eligible (7–12y post-PhD) and competitive? honest verdict
-/call-spec capture    # paste the ERC 2026 call → requirements checklist
-/big-idea             # interrogate the breakthrough: what, why now, why you
-/scope-challenge      # one grant or three? bold enough for CoG?
+/grantstack:grant-fit            # eligible and competitive for CoG? honest verdict
+/grantstack:call-spec capture    # paste the ERC 2026 call → requirements checklist
+/grantstack:big-idea             # interrogate the breakthrough: what, why now, why you
+/grantstack:scope-challenge      # one grant or three? bold enough for CoG?
 
-/state-of-art         # the field, and the specific gap you break open
-/groundbreaking-test  # skeptic argues it's incremental — you defeat the argument
-/objectives           # 3–4 falsifiable objectives with success criteria
-/risk-register        # per bold objective: risk → mitigation → fallback
+/grantstack:state-of-art         # the field, and the specific gap you break open
+/grantstack:groundbreaking-test  # skeptic argues it's incremental — you defeat the argument
+/grantstack:objectives           # 3–4 falsifiable objectives with success criteria
+/grantstack:risk-register        # per bold objective: risk → mitigation → fallback
 
-/workpackage          # WPs, milestones, dependencies, Gantt
-/methodology          # rigorous for the referee, legible for the panel
-/team-resources  /budget  /impact
+/grantstack:workpackage          # WPs, milestones, dependencies, Gantt
+/grantstack:methodology          # rigorous for the referee, legible for the panel
+/grantstack:team-resources  /grantstack:budget  /grantstack:impact
 
-/draft-section synopsis      # then state-of-art, methodology, …
-/synopsis-shotgun            # 4–6 hooks for the most-read page
-/track-record  /lay-summary  /title-shotgun
+/grantstack:draft-section synopsis       # then feasibility, data-management, ethics
+/grantstack:synopsis-shotgun             # 4–6 hooks for the most-read page
+/grantstack:track-record  /grantstack:lay-summary  /grantstack:title-shotgun
+#  the other sections are written by the skill that owns them, above
 
-/call-spec audit      # page limits, fonts, missing annexes — desk-reject check
-/feasibility-audit    # does budget ↔ WPs ↔ timeline ↔ team close?
-/panel-mock generalist   →   /panel-mock skeptic   →   /mentor-review
-/admin-pack           # declarations, host letter, forms
+/grantstack:call-spec audit      # page limits, fonts, missing annexes — desk-reject check
+/grantstack:feasibility-audit    # does budget ↔ WPs ↔ timeline ↔ team close?
+/grantstack:panel-mock generalist   →   /grantstack:panel-mock skeptic   →   /grantstack:mentor-review
+/grantstack:admin-pack           # declarations, host letter, forms
 
-# … submitted, invited to interview …
-/interview-prep       # the pitch, slide skeleton, and a drilled question bank
+# … submitted (set grant.status once the portal confirms), invited to interview …
+/grantstack:interview-prep       # the pitch, slide skeleton, and a drilled question bank
+
+/grantstack:proposal-status      # at any point: where this stands and the one next step
 ```
 
-For an NWO Vici the shape is the same, with `/rebuttal` slotting in before the interview (Vici grants a written rebuttal stage; ERC does not — there you reply in the interview). If it's rejected: `/retro` to mine the reviews, then `/resubmit` to plan the next attempt without gutting the ambition.
+For an NWO Vici the shape is the same with two differences: `/grantstack:impact` is required rather than optional, because knowledge utilisation is a separately weighted criterion; and `/grantstack:rebuttal` slots in before the interview, because NWO sends the referee reports and takes a written reply. ERC does neither — its evaluation report arrives *with the final decision*, so the step-2 interview defends the proposal as written and the reports feed `/grantstack:retro` and `/grantstack:resubmit` afterwards. If it is rejected: `/grantstack:retro` to mine the reviews, then `/grantstack:resubmit` to plan the next attempt without gutting the ambition.
 
 ## Design principles
 
 1. **Role > prompt.** Every skill speaks in a defined voice — advisor, incremental-skeptic, panel reviewer, mentor, interview coach, compliance officer.
 2. **Forcing questions over generation.** Framing and positioning skills interrogate the ambition before they produce prose.
 3. **Two readers, always.** Every section serves the generalist panel who decides funding *and* the in-field referee who reads deeply.
-4. **Ground-breaking and feasible at once.** `/groundbreaking-test` enforces the first; `/risk-register` and `/feasibility-audit` the second. Defend the bold core with fallbacks, never sand it down.
-5. **The person is half the score.** `/track-record` makes the CV an argument; `/interview-prep` rehearses defending it.
-6. **The call is the contract.** `/call-spec` ingests the actual call; GrantStack never asserts limits or eligibility from memory.
-7. **Catch it before the panel does.** Internal `/panel-mock`, `/feasibility-audit`, `/mentor-review`, and `/call-spec audit` front-run the real review.
-8. **Rejection is a stage, not a verdict.** `/retro` + `/resubmit` close the loop — most funded grants are resubmissions.
+4. **Ground-breaking and feasible at once.** `/grantstack:groundbreaking-test` enforces the first; `/grantstack:risk-register` and `/grantstack:feasibility-audit` the second. Defend the bold core with fallbacks, never sand it down.
+5. **The person is half the score.** `/grantstack:track-record` makes the CV an argument; `/grantstack:interview-prep` rehearses defending it.
+6. **The call is the contract.** `/grantstack:call-spec` ingests the actual call; GrantStack never asserts limits or eligibility from memory.
+7. **Catch it before the panel does.** Internal `/grantstack:panel-mock`, `/grantstack:feasibility-audit`, `/grantstack:mentor-review`, and `/grantstack:call-spec audit` front-run the real review.
+8. **Rejection is a stage, not a verdict.** `/grantstack:retro` + `/grantstack:resubmit` close the loop — most funded grants are resubmissions.
 9. **Per-proposal memory.** A `.grantstack/` folder stores the breakthrough, panel assumptions, decisions, and prior reviews.
+10. **Enforcement over convention.** `/grantstack:careful` and `/grantstack:freeze` are backed by a `PreToolUse` hook that blocks the tool call itself — not by prompt text hoping to be remembered — and the call as published and the reports as received are read-only at all times.
+11. **Expert content over generic checklists.** A reference library (`references/`) carries the scheme mechanics, panel-report conventions, section-by-section bars, and the feasibility contradictions panels find, and the skills load it when the stage calls for it.
 
 ## Defaults
 
 - **Schemes.** ERC (StG/CoG/AdG) and NWO Talent (Veni/Vidi/Vici). Set `grant.scheme` in `.grantstack/config.yaml`. The spine generalizes to other large fellowships.
 - **Format.** LaTeX by default; set `grant.format: markdown` for Markdown.
-- **Voice.** `/draft-section`, `/synopsis-shotgun`, and `/lay-summary` anchor tone to whatever skill name you put in `voice.writing_style`. GrantStack ships none; leave it empty for a generic vivid grant voice. Reviewer voice: `grant-reviewer-style`.
+- **Voice.** The drafting skills anchor tone to whatever skill name you put in `voice.writing_style`. GrantStack ships none; leave it empty for a clean, vivid grant voice. The reviewer voice is `voice.reviewer_style`, also optional — left empty, `/grantstack:panel-mock` and `/grantstack:mentor-review` use GrantStack's bundled `references/panel-report-conventions.md`.
 - **Citations.** Never invented — drafting skills cite only `proposal/refs.bib` and mark gaps as `\cite{TODO-...}`.
 
 ## License
