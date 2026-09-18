@@ -10,8 +10,8 @@
     {
       "name": "grantstack",
       "source": "./",
-      "description": "A Claude Code plugin for big research-grant writing — 32 role-based slash commands across the full proposal lifecycle (frame, position, design, write, stress-test, submit, reflect).",
-      "version": "0.1.0",
+      "description": "A Claude Code plugin for big research-grant writing — 35 role-based slash commands across the full proposal lifecycle (frame, position, design, write, stress-test, submit, defend, reflect), a grant reference library (schemes, panel-report conventions, section-by-section bars, feasibility catalog), and hook-enforced edit safety.",
+      "version": "0.2.0",
       "category": "productivity",
       "homepage": "https://github.com/matthewdigiuseppe/GrantStack"
     }
