@@ -1,7 +1,8 @@
 # PI track record
 
-`/track-record` writes the narrative here. This is the "excellence of the
-applicant" half of the score — judged together with the project, not after it.
+`/grantstack:track-record` writes here — the narrative that becomes
+`proposal/sections/pi-track-record.tex`. This is the "excellence of the
+applicant" half of the score, judged together with the project, not after it.
 
 ## Scheme notes
 
@@ -12,7 +13,11 @@ applicant" half of the score — judged together with the project, not after it.
   Follow the current call's exact CV format — it has changed across recent work
   programmes.
 - **NWO** wants a CV plus a key-output list and an academic-profile narrative;
-  the committee weighs "quality of the researcher" explicitly.
+  the committee weighs "quality of the researcher" explicitly, and the Talent
+  scheme's CV rules bar journal-impact-factor and h-index-style metrics.
+
+Confirm both against the call; `/grantstack:call-spec` captures the format that
+actually applies this round.
 
 ## Raw material (fill before drafting)
 

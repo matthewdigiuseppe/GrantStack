@@ -1,0 +1,13 @@
+# LaTeX build products — the sources are the record, the PDF is rebuilt.
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+proposal/main.pdf
+
+.DS_Store

@@ -1,7 +1,11 @@
 # Data management plan
 
-`/draft-section data-management` drafts this. Most schemes (ERC, NWO) require a
-DMP, often FAIR-aligned (Findable, Accessible, Interoperable, Reusable).
+The standalone DMP annex. `/grantstack:admin-pack` writes here, drafting the
+form the call asks for from `proposal/sections/data-management.tex` (which
+`/grantstack:draft-section data-management` writes). Most schemes (ERC, NWO)
+require a DMP, often FAIR-aligned (Findable, Accessible, Interoperable,
+Reusable); whether it is a proposal section, a separate annex, or a portal form
+is a per-call question `/grantstack:call-spec` answers.
 
 Cover, briefly:
 
