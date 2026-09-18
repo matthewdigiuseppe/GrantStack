@@ -1,66 +1,54 @@
 ---
 name: big-idea
-description: Forcing-question interrogation of the central ground-breaking idea — what the breakthrough is, why now, why you — before committing to a proposal. Use after /grant-fit, at the start of a project. Analog to MStack's /research-question, raised to grant ambition.
-user-invocable: true
+description: Interrogates the central ground-breaking claim with six forcing questions — the breakthrough in one sentence, why it is not incremental, why now, why you, the high-gain payoff, the killer objection — and issues a verdict plus the breakthrough sentence that every later section is built on. Use when the user has a candidate idea for a big grant and is about to start building a proposal around it.
 allowed-tools:
   - Read
   - Write
+  - Edit
   - Bash(date *)
 ---
 
 # /grantstack:big-idea
 
-**Stage:** frame
-**Voice:** advisor (the panel chair who will read your synopsis first)
+**Stage:** frame · **Voice:** advisor (the panel chair who reads your synopsis first)
 
-## When to invoke
-
-You are eligible (via `/grant-fit`) and have a candidate idea. Before you build a proposal around it, this skill forces the questions that, if dodged now, become the reviewer comments that sink the grant.
-
-Big grants are not funded for being correct or useful. They are funded for being *ground-breaking and feasible at once*. This skill pressures the first half; `/risk-register` and `/feasibility-audit` pressure the second.
+Big grants are not funded for being correct or useful. They are funded for being *ground-breaking and feasible at once*. This skill pressures the first half; `/grantstack:risk-register` and `/grantstack:feasibility-audit` pressure the second.
 
 ## Procedure
 
-Read `.grantstack/config.yaml` and any `.grantstack/grant-fit.md`. Ask each question, one at a time. After all six, write `.grantstack/big-idea.md` with a verdict and a single drafted breakthrough sentence.
+1. **Load** `.grantstack/config.yaml`, `.grantstack/grant-fit.md` if it exists, and the scheme's criteria in `${CLAUDE_PLUGIN_ROOT}/references/schemes.md`.
+2. **Ask the six questions.** In a live session ask one at a time, offering the option to answer all six in one message; in an asynchronous context present all six together. If `grant-fit.md` or the conversation already answers one, do not re-ask.
 
-### The six questions
+   1. **The breakthrough, one sentence, no clauses.** "What does the field believe, or cannot do, that your project overturns or makes possible?" Push until it is a single declarative sentence a smart non-specialist could repeat from memory. "Contributes to our understanding of X" fails. Clauses hide hedging.
+   2. **Why it is ground-breaking, not incremental.** "Name the specific assumption, barrier, or boundary you break." A panel of generalists must feel the ground move. "No one has done exactly this combination" is incremental unless the combination itself breaks an assumption.
+   3. **Why now.** "What makes this possible or urgent now and not five years ago — a new method, dataset, instrument, theory, or moment?" "Now" needs a concrete enabler.
+   4. **Why you.** "What do you uniquely bring, and can the track record evidence it?" The person and the project are scored together; if anyone could do it, the panel asks why fund *you*.
+   5. **The high-gain payoff.** "If it works, what changes in the field? If it half-works, is the partial result still worth funding?" Name the floor, not just the ceiling.
+   6. **The killer objection.** "What will the most skeptical in-field referee say to kill this — and is your answer real or hand-waving?" If you cannot name the objection, you have not found it yet; the referee will.
 
-1. **The breakthrough, one sentence, no clauses.** "What does the field believe or cannot do today, that your project overturns or makes possible?" — Push until it is a single declarative sentence a smart non-specialist could repeat. "Contributes to our understanding of X" fails. This sentence becomes `project.one_sentence_breakthrough` in config.
+3. **Write** `.grantstack/big-idea.md` — questions, answers, the date from `date +%F`, the verdict, and the drafted breakthrough sentence. Write it even when answers are partial, marking what is open.
 
-2. **Why it's ground-breaking, not incremental.** "Name the specific assumption, barrier, or boundary you break." — A panel of generalists must feel the ground move. If the honest answer is "no one has done exactly this combination", that is incremental. Press for the conceptual or methodological leap.
+   **Verdict**, the first line of the file:
+   - **Fundable ambition** — all six have substantive answers and the breakthrough sentence lands.
+   - **Promising but unframed** — the idea is real but the breakthrough is buried, or the why-now / why-you is thin.
+   - **Not yet a grant** — two or more answers are vague.
 
-3. **Why now.** "What makes this possible or urgent now and not five years ago — a new method, dataset, instrument, theory, or moment?" — Grants reward timeliness. "Now" should have a concrete enabler.
+   Opinionated by design.
 
-4. **Why you.** "What do you uniquely bring that makes you the person to do this — and can the track record evidence it?" — The person and the project are scored together. If anyone could do it, the panel asks why fund *you*.
-
-5. **The high-gain payoff.** "If it works, what changes in the field? If it half-works, is the partial result still worth funding?" — Strong proposals win even on partial success. Name the floor, not just the ceiling.
-
-6. **The killer objection.** "What will the most skeptical in-field referee say to kill this — and is your answer real or hand-waving?" — If you can't name the objection, you haven't found it yet; the referee will.
-
-### Verdict
-
-Write to `.grantstack/big-idea.md`:
-
-- **Fundable ambition** — All six have substantive answers; the breakthrough sentence lands. Proceed to `/state-of-art`.
-- **Promising but unframed** — The idea is real but the breakthrough is buried in incrementalism or the "why now/why you" is thin. Proceed to `/idea-shotgun` to find sharper framings, then re-run.
-- **Not yet a grant** — Two or more answers are vague. Recommend either deferring, or `/scope-challenge` if the problem is that it's three ideas wearing one coat.
-
-The verdict is opinionated by design.
+4. **Stamp the sentence.** Set `project.one_sentence_breakthrough` in `.grantstack/config.yaml`, editing the field in place; ask before overwriting a non-empty value. Append the framing decision to `decisions:` as `- "<date>: framing the breakthrough as <X>, not <Y>."`
 
 ## Outputs
 
-- `.grantstack/big-idea.md` — questions, answers, verdict, and the drafted one-sentence breakthrough.
-- Write the breakthrough sentence into `.grantstack/config.yaml` → `project.one_sentence_breakthrough` (ask before overwriting a non-empty value).
-- Summary block with verdict and next step.
+- `.grantstack/big-idea.md` — questions, answers, verdict, breakthrough sentence.
+- `project.one_sentence_breakthrough` and a `decisions:` entry in `.grantstack/config.yaml`.
+- Summary block: verdict and the breakthrough sentence as it now stands.
 
-## Anti-patterns to refuse
+## Anti-patterns
 
 - **Accepting "novel combination" as ground-breaking.** Combination is incremental unless the combination itself breaks an assumption.
-- **Letting the breakthrough sentence carry clauses.** Clauses hide hedging. One claim.
+- **Letting the breakthrough sentence carry clauses.** One claim.
 - **Skipping "why you".** The person is half the score.
 
-## When to call other skills
+## Next
 
-- After **Fundable ambition**: `/state-of-art`.
-- After **Promising but unframed**: `/idea-shotgun`, then re-run.
-- After **Not yet a grant**: `/scope-challenge`.
+**Fundable ambition** → `/grantstack:state-of-art`. **Promising but unframed** → `/grantstack:idea-shotgun`, then re-run. **Not yet a grant** → `/grantstack:scope-challenge`.

@@ -1,57 +1,46 @@
 ---
 name: resubmit
-description: Plans a resubmission after rejection — diffs the proposal against the reviews, decides what to overhaul vs. defend, checks resubmission eligibility/embargoes, and sequences the rework. Most funded big grants are resubmissions; this turns a rejection into the next attempt. Writes .grantstack/resubmit-plan.md.
-user-invocable: true
+description: Plans the next attempt after a rejection — checks the resubmission embargo, diffs the proposal against the recurring criticisms, decides what to overhaul, defend or hold, names what must not change, and sequences the rework against the next deadline. Use after a rejection the user intends to fight; most funded big grants are resubmissions.
 allowed-tools:
   - Read
   - Write
-  - Bash(date *)
+  - Edit
   - Glob
   - Grep
+  - Bash(date *)
 ---
 
 # /grantstack:resubmit
 
-**Stage:** reflect
-**Voice:** strategist (the colleague who got funded on attempt two or three)
+**Stage:** reflect · **Voice:** strategist — the colleague who got funded on attempt two
 
-## When to invoke
-
-After a rejection you intend to fight. A large share of funded ERC/NWO grants are resubmissions — rejection is a stage, not a verdict. But a naive resubmission that ignores the reviews, or over-corrects and guts the ambition, fails again. This skill plans the rework deliberately.
+Rejection is a stage, not a verdict. But a naive resubmission that ignores the reviews fails again, and so does one that over-corrects and guts the ambition.
 
 ## Procedure
 
-1. **Load.** `.grantstack/retro.md`, the referee reports, `reviews/`, the full proposal, and `.grantstack/config.yaml` (scheme).
-
-2. **Check resubmission rules first.** Some schemes impose embargoes after low scores (e.g., an ERC bottom-tier score can bar resubmission for one or two calls; NWO has its own re-application rules). Confirm against the current call — flag for verification rather than asserting a rule. If barred for a cycle, plan accordingly (retarget, or strengthen the profile in the gap year).
-
-3. **Diff proposal against reviews.** For each recurring criticism (from `/retro`'s signal analysis), decide:
+1. **Load** `.grantstack/retro.md`, `reviews/received/*`, `reviews/rebuttal/*`, the full proposal, `.grantstack/config.yaml`, and the resubmission rules in `${CLAUDE_PLUGIN_ROOT}/references/schemes.md`.
+2. **Check the embargo first.** Schemes restrict resubmission after low scores, and the mapping between score, step, and the number of calls barred changes between work programmes. Confirm it against the current call and flag it for verification rather than asserting it. If barred for a cycle, plan accordingly: retarget, or use the gap year to strengthen the profile.
+3. **Diff the proposal against the reviews.** For each recurring criticism from the retro's signal analysis, decide:
    - **Overhaul** — a fair, fixable weakness (unclear ambition, thin feasibility, weak impact). Plan the specific rework.
-   - **Defend / reframe** — a misunderstanding or a framing failure. The fix is usually clarity, not capitulation — make the strength impossible to miss.
-   - **Hold** — a difference of judgment where you're right and the science backs you. Don't chase every reviewer.
-
-4. **Guard the ambition.** The classic resubmission failure is sanding off the bold core to dodge the "too risky" comment, producing a safe proposal that loses to a bold one. Strengthen feasibility and fallback instead. State explicitly what must *not* change.
-
-5. **Decide the magnitude.** Light-touch revision vs. substantial reframe vs. new framing of the same science (→ `/idea-shotgun`). Recurring ambition criticism usually means reframe, not tweak.
-
-6. **Sequence the rework.** An ordered plan mapping each change to the skill that does it (`/groundbreaking-test`, `/methodology`, `/impact`, `/track-record`, etc.), front-loading the highest-leverage changes, with the next deadline as the anchor.
-
-7. **Write `.grantstack/resubmit-plan.md`** and update `config.status` to `resubmitting`.
+   - **Defend / reframe** — a misunderstanding or a framing failure. The fix is clarity, not capitulation: make the strength impossible to miss.
+   - **Hold** — a difference of judgement where the science backs you. Do not chase every reviewer.
+4. **Guard the ambition.** The classic failure is sanding off the bold core to dodge "too risky", producing a safe proposal that loses to a bold one. Strengthen feasibility and the fallback instead, and state explicitly what must *not* change.
+5. **Decide the magnitude:** light-touch revision, substantial reframe, or new framing of the same science. Recurring criticism of the ambition usually means reframe, not tweak.
+6. **Sequence the rework** as an ordered plan mapping each change to the skill that does it — `/grantstack:groundbreaking-test`, `/grantstack:methodology`, `/grantstack:impact`, `/grantstack:track-record` — front-loading the highest-leverage changes, anchored to the next deadline.
+7. **Write `.grantstack/resubmit-plan.md`**: the eligibility check, the change decisions, the protected core, and the sequenced rework as a checklist so `/grantstack:proposal-status` can read the next unfinished item. Set `grant.status: "resubmitting"` in `.grantstack/config.yaml` if it still says `rejected`, and append the decision to `decisions:`.
 
 ## Outputs
 
-- `.grantstack/resubmit-plan.md` — eligibility check, change decisions (overhaul/defend/hold), the protected core, and the sequenced rework.
-- Summary block: resubmission eligibility status, the 3 highest-leverage changes, and what must not change.
+- `.grantstack/resubmit-plan.md` — embargo check, overhaul/defend/hold decisions, the protected core, the sequenced rework.
+- Summary block: resubmission eligibility, the three highest-leverage changes, and what must not change.
 
-## Anti-patterns to refuse
+## Anti-patterns
 
-- **Resubmitting unchanged.** If nothing changes, the result won't.
+- **Resubmitting unchanged.** If nothing changes, the result will not.
 - **Gutting the ambition to please the cautious referee.** Defend the bold core; fix feasibility instead.
-- **Chasing every comment.** Hold the ones where you're right; over-correction is its own failure.
+- **Chasing every comment.** Hold the ones where you are right; over-correction is its own failure.
 - **Asserting embargo rules from memory.** Confirm against the current call.
 
-## When to call other skills
+## Next
 
-- Before: `/retro` (its signal analysis feeds the diff).
-- During: whichever stage skills the change plan calls for; `/idea-shotgun` if a full reframe is warranted.
-- After: `/call-spec` again (rules may have changed for the new call).
+`/grantstack:call-spec recapture` — the new call may have changed the rules — then the stage skills the plan calls for, and `/grantstack:idea-shotgun` if a full reframe is warranted.
