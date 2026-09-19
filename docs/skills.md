@@ -54,7 +54,8 @@ Other sections are written by the skill that owns them: `state-of-art`, `objecti
 | Skill | Voice | Use when |
 |---|---|---|
 | `/grantstack:feasibility-audit` | staff auditor | Internal consistency: objectives ↔ WPs ↔ timeline ↔ team ↔ budget. |
-| `/grantstack:panel-mock [persona]` | reviewer | Submission-ready. Mock review as generalist / expert / skeptic / chair, scored to the call. |
+| `/grantstack:panel-mock [persona]` | reviewer | Submission-ready. One mock review as generalist / expert / skeptic / chair, scored to the call. |
+| `/grantstack:panel-convene [panel]` | panel secretary | The whole panel: 4-8 reviewers read blind in their own subagents, then argue. Where does your proposal split a room? |
 | `/grantstack:mentor-review [persona]` | mentor | The honest read from an ally — senior-pi / grants-officer / field-elder. |
 | `/grantstack:call-spec audit` | compliance | Before submission. Page limits, format, missing annexes, leftover placeholders. |
 
@@ -102,8 +103,13 @@ The skills carry their procedures; the substance a strong grants adviser brings 
 | `panel-report-conventions.md` | Report structure, tone, specificity, the idioms that decide grants, and how to read a report you must answer (fallback for `voice.reviewer_style`) | panel-mock, mentor-review, rebuttal, retro |
 | `proposal-conventions.md` | What each section owes the generalist panel and the in-field referee; reporting rules; complaints panels make most, by section | draft-section, state-of-art, objectives, methodology, workpackage, impact, track-record, synopsis-shotgun, lay-summary, panel-mock, mentor-review |
 | `feasibility-catalog.md` | The contradictions panels find between objectives, WPs, timeline, team and budget, as checks — including the three arithmetic ones | feasibility-audit, workpackage, budget, team-resources, risk-register, draft-section |
+| `panel-composition.md` | Who is actually in the room: what a published roster gives and withholds, the orientations that split a panel, how to compose one, and the ethics — never contact a reviewer | panel-convene |
 
 Assets: `skills/admin-pack/assets/submission-checklist-template.md` (every row a verdict plus evidence) and `skills/interview-prep/assets/qbank-template.md`.
+
+## The panel agent
+
+GrantStack ships one subagent, `agents/panelist.md`, registering as `grantstack:panelist`. `/grantstack:panel-convene` spawns one instance per persona, and each reads the proposal from disk in its own fresh context. That isolation is what makes the disagreement real: a panellist cannot see the conversation, the other briefs, or the other assessments. Three leaks are closed deliberately — `SendMessage` is denied (which also suppresses the sibling roster that would otherwise list the other agents), and `omitClaudeMd` stops shared project framing reaching every persona identically.
 
 ## Status and memory
 
@@ -140,6 +146,7 @@ Every skill writes to predictable paths inside the proposal folder:
 | `/grantstack:feasibility-audit` | `.grantstack/audits/<date>-feasibility.md` |
 | `/grantstack:panel-mock` | `.grantstack/review-cache/panel-mock-<persona>-<date>.md` |
 | `/grantstack:mentor-review` | `.grantstack/review-cache/mentor-<persona>-<date>.md` |
+| `/grantstack:panel-convene` | `.grantstack/review-cache/panel-convene-<date>.md` + `.grantstack/panel-roster.md` |
 | `/grantstack:admin-pack` | `admin/submission-checklist.md`, `admin/eligibility.md`, `admin/host-support.md`, the DMP and ethics annexes |
 | `/grantstack:rebuttal` | `reviews/rebuttal/<round>-rebuttal.md` (and `reviews/received/<round>-referees.md` when you paste the reports) |
 | `/grantstack:interview-prep` | `reviews/interview/{pitch,slides-outline,qbank}.md` |

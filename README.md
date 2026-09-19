@@ -86,7 +86,8 @@ cd ~/.claude/plugins/grantstack
 | | `/grantstack:lay-summary` | Plain-language summary for the generalist reader |
 | | `/grantstack:track-record` | The case for *you* — curated, not a CV dump |
 | **Stress-test** | `/grantstack:feasibility-audit` | Internal consistency: objectives ↔ WPs ↔ timeline ↔ team ↔ budget |
-| | `/grantstack:panel-mock [persona]` | Mock review: generalist / expert / skeptic / chair, scored to the call |
+| | `/grantstack:panel-mock [persona]` | One mock review: generalist / expert / skeptic / chair, scored to the call |
+| | `/grantstack:panel-convene [panel]` | The whole panel: 4-8 reviewers read blind, then argue it out |
 | | `/grantstack:mentor-review [persona]` | The honest read from an ally |
 | | `/grantstack:call-spec audit` | Page limits, format, missing annexes, leftover placeholders |
 | **Submit** | `/grantstack:admin-pack` | Declarations, host letter, forms, annexes — checked against the call |
@@ -128,6 +129,7 @@ Six moving parts do the work:
 - **`config.yaml` steers the skills.** Skills read it to stay scheme-aware (an ERC CoG and an NWO Vici get different framing), to anchor your prose voice (`voice.writing_style`), and to keep the acronym, budget, and status consistent across every section.
 - **`/grantstack:call-spec` makes the actual call the contract.** Rather than hardcode page limits or eligibility rules that change yearly, you give `/grantstack:call-spec` the real call document; it is kept in `admin/call/`, and the skill extracts the hard requirements into a checklist and later audits the proposal against them. This is why the skills can say "confirm against the current call" instead of asserting rules that drift.
 - **A reference library carries the expertise.** `references/` holds what a strong grants adviser brings to each stage — how the schemes are shaped and who decides what at which step, the conventions of a real panel report, what each section owes the two readers, and the catalog of contradictions panels find between objectives, work packages, timeline, team and budget. Skills load the relevant file at the stage that needs it, so `/grantstack:panel-mock` argues from panel conventions rather than generic taste. See [`docs/skills.md`](docs/skills.md#reference-library).
+- **The panel is a real panel, not one voice four times.** `/grantstack:panel-convene` composes 4-8 reviewers from the funder's published roster — disciplines and traditions in the proportions the roster actually shows — and sends each one into its own subagent to read the proposal blind. They cannot see each other. Only then do the assessments come together and the argument runs. The output is not a score: it is where the panel split, and which objections you can answer by rewriting versus which need reframing.
 - **A status script keeps the folder honest.** `/grantstack:proposal-status` runs one deterministic pass over the folder: which artifacts exist, which are placeholders, which reviews and audits went stale because an input changed after they were written, what stage the files imply, and the single next step. Reopen a proposal after a month and it tells you where you are.
 
 Outputs land in predictable files (`proposal/sections/*.tex`, `budget/budget.md`, `reviews/…`), so the proposal folder is a real working tree you can edit by hand, put under git, and hand to a co-applicant — not a chat transcript.

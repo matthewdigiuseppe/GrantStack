@@ -17,7 +17,7 @@ allowed-tools:
 
 **Stage:** stress-test · **Voice:** reviewer, anchored to `voice.reviewer_style` in `.grantstack/config.yaml`
 
-Your last line of defence before the real panel. Run it more than once with different personas: proposals are killed by the reader you did not simulate.
+Your last line of defence before the real panel, and the fast one: **one** reviewer, one report. When you want the whole room — several reviewers reading blind and then arguing with each other — use `/grantstack:panel-convene` instead. Run this more than once with different personas: proposals are killed by the reader you did not simulate.
 
 `$ARGUMENTS` selects the persona, defaulting to `generalist` (also the fallback for an unrecognized value):
 
@@ -60,4 +60,4 @@ Your last line of defence before the real panel. Run it more than once with diff
 
 ## Next
 
-Below the line → `/grantstack:feasibility-audit`, `/grantstack:groundbreaking-test`, or `/grantstack:impact`, depending on where it fell short. Once revised, re-run with a different persona to triangulate. Before the real interview, `/grantstack:interview-prep` turns the major concerns into questions.
+Below the line → `/grantstack:feasibility-audit`, `/grantstack:groundbreaking-test`, or `/grantstack:impact`, depending on where it fell short. Once revised, re-run with a different persona to triangulate, or `/grantstack:panel-convene` to see where a full panel would split. Before the real interview, `/grantstack:interview-prep` turns the major concerns into questions.

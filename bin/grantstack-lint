@@ -14,6 +14,9 @@ Checks:
   * every skill appears in docs/skills.md (warning)
   * commands a body tells Claude to run are covered by allowed-tools (warning)
   * every ${CLAUDE_PLUGIN_ROOT}/... file a body names exists
+  * every agents/<name>.md parses, and frontmatter `name` == <name>
+  * plugin agents use only the frontmatter fields plugins support
+  * every grantstack:<agent> a skill body names resolves to a shipped agent
   * bin/ scripts byte-compile
   * hooks/hooks.json is valid JSON; hook scripts byte-compile
 """
@@ -134,6 +137,37 @@ for f in sorted(SKILLS.glob("*/SKILL.md")):
         target = ROOT / m.group(1)
         if not target.exists():
             errors.append(f"{rel}: ${{CLAUDE_PLUGIN_ROOT}}/{m.group(1)} does not exist")
+
+# Plugin agents: frontmatter validity and the fields plugins actually support.
+# Claude Code ignores hooks/mcpServers/permissionMode on a plugin-shipped agent,
+# so declaring them is a silent no-op rather than the protection it looks like.
+AGENT_FIELDS = {"name", "description", "model", "effort", "maxTurns", "tools",
+                "disallowedTools", "skills", "memory", "background",
+                "omitClaudeMd", "isolation"}
+agents_dir = ROOT / "agents"
+agent_names = []
+if agents_dir.is_dir():
+    for path in sorted(agents_dir.glob("*.md")):
+        label = f"agents/{path.name}"
+        stem = path.stem
+        agent_names.append(stem)
+        fm = parse_frontmatter(path.read_text(), label)
+        if fm.get("name") != stem:
+            errors.append(f"{label}: frontmatter name {fm.get('name')!r} != filename {stem!r}")
+        if not fm.get("description"):
+            errors.append(f"{label}: missing/empty description")
+        for key in sorted(set(fm) - AGENT_FIELDS):
+            errors.append(f"{label}: '{key}' is not supported on a plugin agent and is ignored")
+
+# Every grantstack:<agent> a skill body names must be a shipped agent.
+agent_ref = re.compile(r"grantstack:([a-z0-9-]+)")
+for f in sorted(SKILLS.glob("*/SKILL.md")):
+    rel = f.relative_to(ROOT)
+    for m in agent_ref.finditer(f.read_text()):
+        name = m.group(1)
+        if name in skill_names or name in agent_names:
+            continue
+        errors.append(f"{rel}: grantstack:{name} is neither a skill nor an agent")
 
 # Docs coverage.
 docs_skills = (ROOT / "docs" / "skills.md").read_text()
