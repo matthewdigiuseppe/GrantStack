@@ -25,6 +25,15 @@ project:
   one_sentence_breakthrough: ""   # THE ground-breaking claim, no clauses
   objectives: []                  # 3-4 high-level objectives; /grantstack:objectives populates this
 
+panel:
+  # The review panel /grantstack:panel-convene simulates. Composed once from the
+  # funder's published roster and reused, so a later run shows whether a revision
+  # moved anyone. The composed personas live in .grantstack/panel-roster.md.
+  code: ""                 # ERC panel (SH2, PE6, LS4...), an NWO committee, or a description
+  size: 8                  # 4-8 reviewers
+  dogmatism: 5             # 0-10 centre; the panel spreads around it, per-persona
+  grounding: "archetype"   # archetype | named  — named infers from real members' published work
+
 decisions:
   # The proposal's decision log — the one place non-obvious calls are recorded.
   # Append a one-liner every time you make one; /grantstack:retro reads them back.
