@@ -1,7 +1,7 @@
 # Budget
 
-`/budget` writes the justification here, aligned line-by-line to the work
-packages in `proposal/sections/workpackages.tex`. Until then, this is a stub.
+`/grantstack:budget` writes here, aligned line-by-line to the work packages in
+`proposal/sections/workpackages.tex`. Until then, this is a stub.
 
 ## Headline
 
@@ -12,7 +12,7 @@ packages in `proposal/sections/workpackages.tex`. Until then, this is a stub.
 | Consumables | | |
 | Travel / fieldwork / dissemination | | |
 | Other (open access, archiving, audit) | | |
-| **Total** | | must match the scheme ceiling |
+| **Total** | | must match the ceiling in `.grantstack/call-spec.md` |
 
 ## Per-WP allocation
 

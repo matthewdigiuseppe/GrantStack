@@ -1,7 +1,8 @@
 ---
 name: freeze
-description: Lock edits to one directory. Refuses all writes outside that directory until /unfreeze. Useful during rebuttal/interview to keep Claude out of the frozen proposal, or always to keep it out of submitted/ annexes. Lifted from gstack's /freeze via MStack.
-user-invocable: true
+description: Locks writes to a single directory — a GrantStack hook denies edits anywhere else in the proposal folder until /grantstack:unfreeze. Use during the rebuttal or interview prep to keep Claude out of the submitted proposal, or to fence it into one part of the folder.
+argument-hint: "<directory>"
+disable-model-invocation: true
 allowed-tools:
   - Read
   - Write
@@ -10,39 +11,34 @@ allowed-tools:
 
 # /grantstack:freeze
 
-**Stage:** power
-**Voice:** safety
+**Stage:** power · **Voice:** safety
 
-## Argument
+`$ARGUMENTS` is the directory writes stay inside, relative to the proposal folder (`reviews/rebuttal`, `reviews/interview`, `proposal/sections`). Without an argument do **not** lock: print the current state from `.grantstack/safety.yaml` and ask which directory; a lock on the whole folder is a no-op that gives false comfort.
 
-`$ARGUMENTS` — the directory to allow writes within. All writes outside this directory will be refused until `/unfreeze` is called.
-
-If no argument is given, default to the current proposal-folder root (everything writeable as today).
+Enforcement is the `PreToolUse` hook (`hooks/grantstack-guard.py`): while `freeze.path` is set, writes outside it are denied by the hook itself, including in later sessions that never loaded this skill. `.grantstack/` stays writable so the lock can be cleared; `admin/call/` and `reviews/received/` stay read-only regardless.
 
 ## Procedure
 
-1. **Read or create `.grantstack/safety.yaml`.**
+1. Read or create `.grantstack/safety.yaml`.
+2. Set the lock in exactly this shape:
 
-2. **Set the lock.**
-   - `freeze.path: <relative-or-absolute-path>`.
-   - `freeze.set_at: <YYYY-MM-DD HH:MM>`.
+   ```yaml
+   freeze:
+     path: "reviews/rebuttal"
+     set_at: "YYYY-MM-DD HH:MM"
+   ```
 
-3. **Behavior change while `freeze.path` is set:**
-   - Before any `Write`, `Edit`, or `Bash` that mutates files outside `freeze.path`, refuse and tell the user to run `/unfreeze` first.
-   - Reads, greps, finds, and `Bash` commands that don't mutate outside the path are fine.
-
-4. **Print the lock state** to the user with the absolute path of the lock target.
+3. Tell the user what the hook now does: `Write` / `Edit` outside the path (and outside `.grantstack/`) denied; mutating Bash (`rm`, `mv`, `cp`, redirects, `sed -i`, `git reset/clean/checkout --`) with targets outside the lock denied, and asked about when the targets cannot be resolved; reads, greps, and non-mutating commands unaffected.
+4. Print the lock state with the absolute path of the target.
 
 ## Outputs
 
-- `.grantstack/safety.yaml` updated.
-- Summary: lock target.
+- `.grantstack/safety.yaml` updated; summary with the lock target.
 
-## Anti-patterns to refuse
+## Anti-patterns
 
-- **Quietly working around the lock.** If a step requires a write outside, surface it and ask.
+- **Working around the lock.** If a step needs a write outside, surface it and ask; do not restructure the work to dodge the hook.
 
-## When to call other skills
+## Next
 
-- Pair with `/careful` to make `/guard`.
-- Use `/unfreeze` to clear.
+`/grantstack:unfreeze` clears it; with `/grantstack:careful` it is `/grantstack:guard`.

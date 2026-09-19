@@ -1,76 +1,63 @@
 ---
 name: panel-mock
-description: Generates a mock evaluation of the proposal in the voice of a real review panel — a generalist panel member, an in-field remote referee, or a skeptic — scored to the scheme's criteria. Front-runs the actual panel so problems surface pre-submission. Wraps grant-reviewer-style. Writes to .grantstack/review-cache/. The grant analog to MStack's /referee-mock.
-user-invocable: true
+description: Writes a mock evaluation in the voice of a real reviewer — generalist panel member, in-field referee, incremental skeptic, or panel chair — scored against the call's own criteria and weights, with major concerns that cite the section. Use when the proposal is near submission-ready, or when the user wants to know how a panel will react before the panel does.
+argument-hint: "[generalist|expert|skeptic|chair]"
 allowed-tools:
   - Read
   - Write
-  - Bash(date *)
+  - Edit
   - Glob
   - Grep
+  - Bash(date *)
+  - Bash(wc *)
+  - Bash(git rev-parse *)
 ---
 
 # /grantstack:panel-mock
 
-**Stage:** stress-test (pre-submission)
-**Voice:** reviewer (anchored to `grant-reviewer-style`)
+**Stage:** stress-test · **Voice:** reviewer, anchored to `voice.reviewer_style` in `.grantstack/config.yaml`
 
-## When to invoke
+Your last line of defence before the real panel. Run it more than once with different personas: proposals are killed by the reader you did not simulate.
 
-When the proposal sections exist and it's "submission-ready." This is your last line of defense before the real panel. Run it more than once with different personas — proposals are killed by the reader you didn't simulate.
+`$ARGUMENTS` selects the persona, defaulting to `generalist` (also the fallback for an unrecognized value):
 
-## Argument
-
-`$ARGUMENTS` (optional) — reviewer persona:
-- `generalist` (default) — a panel member **not in your subfield**. Reads the synopsis and lay summary hardest. Decides funding. The reader most applicants under-serve.
-- `expert` — the in-field remote referee. Reads methodology and state-of-art deeply; prosecutes rigour, feasibility, and whether it's truly beyond the state of the art.
-- `skeptic` — the incremental-skeptic who defaults to "excellent but not ground-breaking" and looks for the reason to rank you below the funding line.
-- `editor` / `chair` — prosecutes fit to the scheme, balance of person-vs-project, clarity, and whether each weighted criterion is visibly met.
-
-If unrecognized, default to `generalist`.
+- `generalist` — a panel member **not in your subfield**, who reads the synopsis and lay summary hardest and decides funding. The reader applicants most under-serve.
+- `expert` — the in-field remote referee, who reads methodology and state-of-the-art deeply and prosecutes rigour, feasibility, and genuine novelty.
+- `skeptic` — the incremental-skeptic who defaults to "excellent but not ground-breaking" and looks for the reason to rank you below the line.
+- `chair` (or `editor`) — prosecutes scheme fit, the person-versus-project balance, clarity, and whether every weighted criterion is visibly met.
 
 ## Procedure
 
-1. **Load the proposal.** All `proposal/sections/*`, `cv/track-record.md`, `budget/budget.md`, `.grantstack/config.yaml` (scheme), and `.grantstack/call-spec.md` (the **evaluation criteria and weights** — the review must score against these, not generic taste).
+1. **Load the proposal in full:** every file in `proposal/sections/`, `cv/track-record.md`, `budget/budget.md`, `.grantstack/config.yaml`, and `.grantstack/call-spec.md` — the **evaluation criteria and weights** the review must score against, rather than generic taste. Load prior reports in `.grantstack/review-cache/`; if this persona reviewed an earlier draft, say explicitly what improved and what did not.
+2. **Reviewer voice.** If `voice.reviewer_style` names an installed skill, use it for voice, tone, and structure; otherwise `${CLAUDE_PLUGIN_ROOT}/references/panel-report-conventions.md`.
 
-2. **Load prior mock reports** in `.grantstack/review-cache/`. If this persona reviewed an earlier draft, note explicitly what improved and what didn't.
-
-3. **Invoke the reviewer voice.** Use `grant-reviewer-style` for the tone and structure of a panel report; honor `voice.reviewer_style` if overridden in config.
-
-4. **Review with the persona's bias dialed in:**
+   **Persona ammunition.** `generalist`: the synopsis and lay-summary bars in `${CLAUDE_PLUGIN_ROOT}/references/proposal-conventions.md` — press every place the claim stops being legible. `expert`: the methodology bar there plus `${CLAUDE_PLUGIN_ROOT}/references/feasibility-catalog.md`, and raise every contradiction the proposal has not closed. `skeptic`: the tests in the newest `.grantstack/groundbreaking-test-*.md`, and whether the proposal's own answers survive. `chair`: the scheme's criteria in `${CLAUDE_PLUGIN_ROOT}/references/schemes.md` and the complaints-by-section table in `proposal-conventions.md`.
+3. **Review with the persona's bias dialed in:**
 
    | Persona | Presses hardest on |
    |---|---|
    | `generalist` | Is the synopsis legible and exciting to a non-expert? Is the ambition obvious? Does the jargon lose me? Would I champion this in the room? |
-   | `expert` | Rigour, feasibility of the methods, command of the literature, genuine novelty vs. the state of the art, the realism of the risk plan |
-   | `skeptic` | Is this actually ground-breaking or just very good? Where's the real high-risk/high-gain bet? Why fund this over the next proposal? |
-   | `editor`/`chair` | Scheme fit, person↔project balance, every weighted criterion addressed (esp. impact / knowledge utilisation), clarity, page-budget discipline |
+   | `expert` | Rigour, feasibility of the methods, command of the literature, genuine novelty against the state of the art, realism of the risk plan |
+   | `skeptic` | Is this actually ground-breaking or just very good? Where is the real high-risk/high-gain bet? Why fund this over the next proposal? |
+   | `chair` | Scheme fit, person↔project balance, every weighted criterion addressed (especially impact / knowledge utilisation), clarity, page discipline |
 
-5. **Score to the scheme.** Use the call's actual criteria and weights from `call-spec`. Give a per-criterion assessment and an overall standing relative to the funding line (e.g., for ERC-style: roughly A / B / C; for NWO: per-criterion qualitative + fund/no-fund call). Be the reviewer you fear, not the one you hope for.
-
-6. **Report structure:**
-   - **Summary** (1 para): what the project claims and proposes.
-   - **Strengths** (2-4): genuine, specific.
-   - **Major concerns** (3-6): the issues that move it below the line if unaddressed. Cite the section/page.
-   - **Minor concerns** (5-12): clarity, gaps, presentation, missing detail.
-   - **Per-criterion scores** + **overall recommendation** relative to the funding line.
-
-7. **Save** to `.grantstack/review-cache/panel-mock-<persona>-<YYYY-MM-DD>.md` with a header: persona, scheme, panel, draft word count or commit hash, date.
+4. **Score to the scheme** using the criteria and weights in `call-spec.md`: a per-criterion assessment and an overall standing relative to the funding line, in the scheme's own vocabulary. Be the reviewer you fear, not the one you hope for.
+5. **Write the report** in this structure: **Summary** (one paragraph, what the project claims and proposes, in your words); **Strengths** (2-4, genuine and specific); **Major concerns** (3-6, the issues that move it below the line, each citing the section); **Minor concerns** (5-12); **per-criterion assessment**; **overall standing**.
+6. **Check your own recommendations against your findings.** A fix you recommend must not contradict a concern you raised elsewhere in the report — do not ask for a broader scope in one paragraph and warn about over-scoping in another. Reconcile before saving.
+7. **Save** to `.grantstack/review-cache/panel-mock-<persona>-<YYYY-MM-DD>.md` (date from `date +%F`) with a header carrying persona, scheme, panel, date, and the draft's identity — `git rev-parse --short HEAD` in a git repo, otherwise a `wc -w` word count across `proposal/sections/`. Open with the **Recommendation** line so the standing is the first thing read. Set `grant.status: "review"` in `.grantstack/config.yaml` if it still says `writing`.
 
 ## Outputs
 
 - `.grantstack/review-cache/panel-mock-<persona>-<date>.md`.
-- Summary block: top 3 major concerns, the per-criterion standing, the overall call, and a prompt to run the persona you haven't run.
+- Summary block: the top three major concerns, the per-criterion standing, the overall call, and a prompt to run the persona you have not run.
 
-## Anti-patterns to refuse
+## Anti-patterns
 
-- **Sycophancy.** "Strong proposal, fund it" with no major concern fails the user. If you can't find a major concern, you're not reading as the panel will.
+- **Sycophancy.** "Strong proposal, fund it" with no major concern fails the user. If you cannot find a major concern, you are not reading as the panel will.
 - **Generic comments.** "Strengthen the impact" is useless; cite the section and say how it falls short of the criterion.
-- **Scoring on personal taste instead of the call's criteria.** Use the weights in `call-spec`.
-- **Speaking outside the persona.** A `generalist` doesn't critique a clustering algorithm; a `skeptic` doesn't praise.
+- **Scoring on personal taste instead of the call's criteria.**
+- **Speaking outside the persona.** A `generalist` does not critique a clustering algorithm; a `skeptic` does not praise.
 
-## When to call other skills
+## Next
 
-- After a `Major concerns` or below-line verdict: `/feasibility-audit`, `/groundbreaking-test`, or `/impact` depending on where it fell short.
-- Once revised: re-run with a different persona to triangulate.
-- Before the real interview: `/interview-prep` (the mock major-concerns become interview questions).
+Below the line → `/grantstack:feasibility-audit`, `/grantstack:groundbreaking-test`, or `/grantstack:impact`, depending on where it fell short. Once revised, re-run with a different persona to triangulate. Before the real interview, `/grantstack:interview-prep` turns the major concerns into questions.

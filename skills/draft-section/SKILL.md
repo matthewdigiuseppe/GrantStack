@@ -1,7 +1,7 @@
 ---
 name: draft-section
-description: Drafts a proposal section (synopsis, state-of-art, objectives, methodology, workpackages, feasibility, pi-track-record, impact, data-management, ethics) in voice, scheme-aware, within the call's page budget. Anchors tone to the writing-style skill in .grantstack/config.yaml. Section name passed as argument. Writes to proposal/sections/<name>.tex. Never fabricates citations.
-user-invocable: true
+description: Drafts a proposal section it owns — synopsis, feasibility, data-management or ethics — in the configured writing voice, to the substantive bar each section owes the two readers, within the call's page budget, citing only proposal/refs.bib. Use when the user asks to write or revise one of those sections; other sections belong to their own skill, which this one names.
+argument-hint: "synopsis|feasibility|data-management|ethics"
 allowed-tools:
   - Read
   - Write
@@ -13,65 +13,51 @@ allowed-tools:
 
 # /grantstack:draft-section
 
-**Stage:** write
-**Voice:** writer (anchored to the skill named in `.grantstack/config.yaml` → `voice.writing_style`)
+**Stage:** write · **Voice:** writer, anchored to `voice.writing_style` in `.grantstack/config.yaml`
 
-## When to invoke
+`$ARGUMENTS` is the section to draft. This skill owns four:
 
-After the upstream stage for that section is settled (e.g., draft `methodology` only after `/methodology` has specified the approach; draft `synopsis` only once objectives and the ground-breaking claim are stable). Drafting ahead of the thinking produces prose you'll rewrite.
+| Section | Composed from |
+|---|---|
+| `synopsis` | `.grantstack/big-idea.md`, the newest `groundbreaking-test-*.md`, `proposal/sections/objectives.tex` |
+| `feasibility` | `.grantstack/risk-register.md`, `.grantstack/team-plan.md`, `.grantstack/wp-plan.md` |
+| `data-management` | `admin/data-management.md`, the DMP rules in `.grantstack/call-spec.md` |
+| `ethics` | `admin/ethics.md`, the ethics rules in `.grantstack/call-spec.md` |
 
-## Argument
+Every other section has a skill that owns it — `state-of-art`, `objectives`, `methodology`, `workpackages` (`/grantstack:workpackage`), `pi-track-record` (`/grantstack:track-record`), `impact`, `lay-summary`. If `$ARGUMENTS` names one of those, say which skill owns it and stop; if it names nothing recognized, list the four above and stop. One writer per file, or two skills overwrite each other's work.
 
-`$ARGUMENTS` is the section name. One of: `synopsis`, `state-of-art`, `objectives`, `methodology`, `workpackages`, `feasibility`, `pi-track-record`, `impact`, `data-management`, `ethics`.
-
-If not supplied or unrecognized, list the recognized names and stop.
+Drafting ahead of the thinking produces prose you will rewrite: `synopsis` needs the objectives and the ground-breaking claim settled, `feasibility` needs the risk register and the team plan on disk.
 
 ## Procedure
 
-1. **Load context.**
-   - `.grantstack/config.yaml` — scheme, acronym, title, status.
-   - `.grantstack/call-spec.md` — the page/word budget and formatting rules for this section. Respect the limit as a hard gate.
-   - `.grantstack/learnings.jsonl` — proposal-specific conventions (acronym usage, panel assumptions, framing decisions).
-   - `proposal/refs.bib` — available citations; never invent entries.
-   - Sibling sections in `proposal/sections/` so voice, acronym, and cross-references stay consistent.
-   - The relevant upstream artifact (e.g., `.grantstack/risk-register.md` for feasibility, `cv/track-record.md` for pi-track-record).
-
-2. **Invoke the writing voice.** Read `voice.writing_style`; if set, use that skill. If unset, write in a clean, vivid scholarly grant voice: confident, concrete, active, no hedge-stuffing, no thesaurus reaches. Tell the user once that no `voice.writing_style` is configured.
-
+1. **Load** `.grantstack/config.yaml` (scheme, acronym, title), `.grantstack/call-spec.md` (the page or word budget and formatting rules for this section — a hard gate), `.grantstack/learnings.jsonl` (proposal conventions), the section's source memos from the table above, and the sibling sections in `proposal/sections/` so voice, acronym, and cross-references stay consistent. List the citable keys of `proposal/refs.bib` with `grep -o '^@[A-Za-z]*{[^,]*' proposal/refs.bib` rather than reading the whole bibliography. Read the bar for this section in `${CLAUDE_PLUGIN_ROOT}/references/proposal-conventions.md`.
+2. **Invoke the writing voice.** If `voice.writing_style` names an installed skill, use it for tone, rhythm, and vocabulary. If unset, write clean, vivid scholarly grant prose — confident, concrete, active, no hedge-stuffing, no thesaurus reaches — and tell the user once that they can set a style skill in `.grantstack/config.yaml`.
 3. **Draft to the section's bar:**
 
    | Section | Quality bar |
    |---|---|
-   | `synopsis` | The most-read page. Breakthrough → why now → why you → what you'll do → why it's feasible. Legible to a generalist panel in one read. |
-   | `state-of-art` | Command the field, then name the specific gap your breakthrough opens. Gap visible in the first two sentences. |
-   | `objectives` | 3-4 falsifiable objectives with success criteria; together they sum to the breakthrough. |
-   | `methodology` | Rigorous for the referee, legible for the panel. Each method tied to an objective; the novel core marked. |
-   | `workpackages` | WPs, milestones, deliverables, dependencies, Gantt. Verifiable milestones only. |
-   | `feasibility` | Risk → mitigation → fallback; team and resources; timeline closes. Bold but not reckless. |
-   | `pi-track-record` | The right person to do this. Achievements chosen to evidence ground-breaking capacity, not a CV dump. |
-   | `impact` | Pathways with named audiences and mechanisms; proportional to the science. NWO: hit the knowledge-utilisation prompts. |
-   | `data-management` | FAIR-aligned: what data, where stored/archived, access, standards, cost. |
-   | `ethics` | Address each applicable category explicitly; state approvals held/needed. State "not applicable" per category rather than leaving blanks. |
+   | `synopsis` | The most-read page. Breakthrough → why now → why you → the plan in brief → why it is feasible. Legible to a generalist panel in one read, with the high-risk element stated as a bet rather than hidden. |
+   | `feasibility` | Risk → mitigation → decision point → fallback, per bold objective; then team and resources; then the timeline closing. Bold but not reckless. Composed from the memos, not re-derived. |
+   | `data-management` | FAIR-aligned: what data, where stored and archived, access and licensing, standards and repositories, who is responsible, what it costs — and the cost appears in the budget. |
+   | `ethics` | Every applicable category addressed explicitly, approvals held or needed and from whom, and an explicit "not applicable" per category rather than a blank. |
 
-4. **Citations.** Cite only `refs.bib` entries. For a needed-but-missing citation, insert `\cite{TODO-author-year-keyword}` and append `% TODO: add ref — <description>`. Never fabricate.
-
-5. **Write to disk.** Output to `proposal/sections/<name>.tex` (`.md` if `config.format: markdown`). Overwrite only if the file is empty or a placeholder; otherwise produce a candidate and ask whether to overwrite, append, or save to `proposal/sections/<name>.candidate.tex`.
+4. **Citations.** Cite only keys that exist in `refs.bib`. For a needed-but-missing citation insert `\cite{TODO-author-year-keyword}` and append `% TODO: add ref — <description>`; in markdown format use `[@TODO-author-year-keyword]`. Never fabricate.
+5. **Self-check before saving:** the section fits its page or word budget in `call-spec.md`; every number in it matches the memo or table it came from (budget total, duration, headcount, objective count); every cross-reference points at a section that exists; no citation key is invented; for `synopsis`, a generalist could state the breakthrough after one read.
+6. **Write to disk** — `proposal/sections/<name>.tex`, or `.md` when `grant.format` is `markdown`. Overwrite only if the file is empty or still the template stub; otherwise produce a candidate and ask whether to overwrite, append, or save to `proposal/sections/<name>.candidate.tex`. On the first substantive section, set `grant.status: "writing"` in `.grantstack/config.yaml` if it still says `designing`.
 
 ## Outputs
 
-- `proposal/sections/<name>.tex`.
-- Optional `.grantstack/draft-log.md` — one line per draft (date, section, word count, page-budget status, outstanding TODOs).
+- `proposal/sections/<name>.tex` (or `.candidate.tex` pending your decision).
+- Summary block: word count against the budget, outstanding `TODO` citations, and anything cut to fit.
 
-## Anti-patterns to refuse
+## Anti-patterns
 
 - **Fabricating citations.** TODO them.
-- **Blowing the page budget.** If `call-spec` says ≤5 pages, draft to fit; flag if the content can't compress without cutting scope.
-- **Drafting `methodology`/`workpackages` before the design skills have run.** Stop and point to `/methodology` or `/workpackage`.
-- **A synopsis only the subfield understands.** It's read by the whole panel; if a generalist can't follow it, it fails.
-- **Generic voice when a `writing_style` is configured.** Defer to it.
+- **Blowing the page budget.** Draft to fit; if the content cannot compress without cutting scope, say so rather than silently overrunning.
+- **Drafting a section another skill owns.** Name the skill and stop.
+- **A synopsis only the subfield understands.** The whole panel reads it; if a generalist cannot follow it, it fails.
+- **Generic voice when a `writing_style` is configured.** Defer to it; do not paper over it with hedge phrases.
 
-## When to call other skills
+## Next
 
-- Before `synopsis`: `/objectives` and `/groundbreaking-test` should be on file.
-- After `synopsis`: `/synopsis-shotgun` for variants.
-- After all sections: `/call-spec audit`, then `/feasibility-audit`, then `/panel-mock`.
+After `synopsis`: `/grantstack:synopsis-shotgun` for variants. Once the sections exist: `/grantstack:call-spec audit`, `/grantstack:feasibility-audit`, then `/grantstack:panel-mock`.

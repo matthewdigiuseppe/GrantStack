@@ -3,8 +3,10 @@
 # Scaffolds a new proposal folder from GrantStack's templates/proposal-folder/ tree.
 set -euo pipefail
 
+SCHEMES="erc-stg erc-cog erc-adg nwo-veni nwo-vidi nwo-vici other"
+
 usage() {
-  cat <<EOF
+  cat <<USAGE
 Usage: grantstack-init <grant-name> [--scheme <scheme>]
 
 Creates a new GrantStack proposal folder under the current working directory.
@@ -16,7 +18,7 @@ Examples:
   grantstack-init quantum-aid
   grantstack-init group-formation-2026 --scheme nwo-vici
   grantstack-init deep-history --scheme erc-cog
-EOF
+USAGE
 }
 
 if [[ $# -lt 1 || "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
@@ -29,10 +31,25 @@ shift
 SCHEME=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --scheme) SCHEME="${2:-}"; shift 2 ;;
+    --scheme)
+      if [[ $# -lt 2 || -z "${2:-}" ]]; then
+        echo "--scheme needs a value (one of: $SCHEMES)" >&2
+        usage
+        exit 1
+      fi
+      SCHEME="$2"
+      shift 2
+      ;;
     *) echo "Unknown arg: $1" >&2; usage; exit 1 ;;
   esac
 done
+
+if [[ -n "$SCHEME" ]]; then
+  case " $SCHEMES " in
+    *" $SCHEME "*) ;;
+    *) echo "Unknown scheme: $SCHEME (one of: $SCHEMES)" >&2; exit 1 ;;
+  esac
+fi
 
 # Resolve GrantStack root (the script lives in bin/, so .. is root).
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -53,20 +70,23 @@ fi
 # Copy template (preserve hidden files).
 cp -R "$TEMPLATE" "$DEST"
 
-# Stamp the short_name (and optionally scheme) into config.yaml.
+# Stamp short_name, scheme, and status into config.yaml, keeping the trailing
+# comments (the scheme comment is the only in-file list of valid values).
 CFG="$DEST/.grantstack/config.yaml"
 if [[ -f "$CFG" ]]; then
   tmp="$(mktemp)"
   awk -v n="$NAME" -v s="$SCHEME" '
-    /^  short_name: ""/ { print "  short_name: \"" n "\""; next }
-    (s != "") && /^  scheme: ""/ { print "  scheme: \"" s "\""; next }
+    /^  short_name: ""/            { sub(/short_name: ""/, "short_name: \"" n "\"") }
+    (s != "") && /^  scheme: ""/   { sub(/scheme: ""/,     "scheme: \"" s "\"") }
+    /^  status: ""/                { sub(/status: ""/,     "status: \"framing\"") }
     { print }
-  ' "$CFG" > "$tmp" && mv "$tmp" "$CFG"
+  ' "$CFG" > "$tmp" && cat "$tmp" > "$CFG" && rm -f "$tmp"
 fi
 
 echo "Scaffolded $DEST"
 echo ""
 echo "Next:"
 echo "  cd $NAME"
-echo "  edit .grantstack/config.yaml (set scheme, deadline, host, acronym, title)"
-echo "  start with /grant-fit (am I eligible and competitive?) or /big-idea"
+echo "  edit .grantstack/config.yaml (PI name, PhD year, deadline, host, acronym, title)"
+echo "  start with /grantstack:grant-fit (am I eligible and competitive?) or /grantstack:big-idea"
+echo "  any time later: /grantstack:proposal-status"

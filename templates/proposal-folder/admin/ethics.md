@@ -1,9 +1,11 @@
 # Ethics
 
-`/draft-section ethics` drafts this. ERC runs a formal ethics self-assessment
-and may flag a proposal for ethics review; NWO requires an ethics statement
-where relevant. Get this right — an unresolved ethics flag can block an
-otherwise-funded grant.
+The standalone ethics annex / self-assessment. `/grantstack:admin-pack` writes
+here, drafting the form the call asks for from
+`proposal/sections/ethics.tex` (which `/grantstack:draft-section ethics`
+writes). ERC runs a formal ethics self-assessment and may flag a proposal for
+ethics review; NWO requires an ethics statement where relevant. Get this right
+— an unresolved ethics flag can block an otherwise-funded grant.
 
 Cover, where applicable:
 

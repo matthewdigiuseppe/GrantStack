@@ -13,7 +13,7 @@ grant:
 
 pi:
   name: ""                 # the applicant / principal investigator
-  phd_year: ""             # YYYY — used for eligibility windows (e.g. ERC CoG 7-12y, NWO VICI <=15y)
+  phd_year: ""             # YYYY — eligibility windows are per scheme and per call; verify against the call
   eligibility_notes: ""    # extensions (parental leave, etc.), prior ERC/NWO grants, host endorsement
 
 budget:
@@ -23,10 +23,11 @@ budget:
 
 project:
   one_sentence_breakthrough: ""   # THE ground-breaking claim, no clauses
-  objectives: []                  # 3-4 high-level objectives; /objectives populates this
+  objectives: []                  # 3-4 high-level objectives; /grantstack:objectives populates this
 
 decisions:
-  # Append a one-liner every time you make a non-obvious call.
+  # The proposal's decision log — the one place non-obvious calls are recorded.
+  # Append a one-liner every time you make one; /grantstack:retro reads them back.
   # - "2026-05-09: dropped the fieldwork WP; too high-risk for the timeline panel will accept."
 
 voice:
@@ -35,4 +36,6 @@ voice:
   # put its skill name here. Leave empty to use a generic scholarly-but-vivid
   # grant voice.
   writing_style: ""
-  reviewer_style: "grant-reviewer-style"
+  # Name of a reviewer-style skill for /grantstack:panel-mock. Leave empty to
+  # use GrantStack's built-in fallback (references/panel-report-conventions.md).
+  reviewer_style: ""

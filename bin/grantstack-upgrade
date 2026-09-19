@@ -1,19 +1,42 @@
 #!/usr/bin/env bash
 # grantstack-upgrade — pull latest GrantStack from GitHub and re-run setup.
+# Clone installs only; a marketplace install is updated with
+# /plugin marketplace update grantstack (see /grantstack:grantstack-upgrade).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GS_ROOT="$(cd "$HERE/.." && pwd)"
 
 if [[ ! -d "$GS_ROOT/.git" ]]; then
-  echo "GrantStack root at $GS_ROOT is not a git checkout; cannot upgrade." >&2
+  echo "GrantStack root at $GS_ROOT is not a git checkout." >&2
+  echo "For a marketplace install, run: /plugin marketplace update grantstack" >&2
   exit 1
 fi
 
-echo "Pulling latest GrantStack..."
+if [[ -n "$(git -C "$GS_ROOT" status --porcelain)" ]]; then
+  echo "GrantStack checkout at $GS_ROOT has local changes; commit or stash them first." >&2
+  exit 1
+fi
+
+BEFORE="$(git -C "$GS_ROOT" rev-parse --short HEAD)"
+
+echo "Fetching latest GrantStack..."
+git -C "$GS_ROOT" fetch --quiet
+
+echo "Pulling..."
 git -C "$GS_ROOT" pull --ff-only
+
+AFTER="$(git -C "$GS_ROOT" rev-parse --short HEAD)"
 
 echo "Re-running setup..."
 "$GS_ROOT/setup"
 
-echo "Upgrade done."
+if [[ "$BEFORE" == "$AFTER" ]]; then
+  echo "Already up to date ($AFTER)."
+else
+  echo ""
+  echo "Changed skills ($BEFORE -> $AFTER):"
+  git -C "$GS_ROOT" diff --name-only "$BEFORE" "$AFTER" -- skills/ || true
+fi
+
+echo "Upgrade done. Restart Claude Code to pick up changed skills."

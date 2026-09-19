@@ -1,0 +1,486 @@
+#!/usr/bin/env python3
+"""grantstack-status — deterministic inventory of a GrantStack proposal folder.
+
+Backs /grantstack:proposal-status. One call replaces a couple of dozen globs,
+greps, and stat lookups: it prints the config summary, every pipeline artifact
+with its state (present / thin / stub / missing), date, and verdict line, the
+verdicts that are stale because an input changed after they were written, the
+stage the artifacts imply, whether that agrees with grant.status in
+.grantstack/config.yaml, and the one next step. It never writes anything.
+Standard library only.
+
+Usage:
+  grantstack-status                 # inspect the proposal folder at or above cwd
+  grantstack-status path/to/grant
+  grantstack-status --json          # machine-readable
+"""
+import datetime as dt
+import glob
+import json
+import re
+import sys
+from pathlib import Path
+
+STAGES = ["frame", "position", "design", "write", "stress-test", "submit", "defend", "reflect"]
+STATUS_STAGE = {
+    "framing": "frame", "positioning": "position", "designing": "design",
+    "writing": "write", "review": "stress-test", "submitted": "submit",
+    "rebuttal": "defend", "interview": "defend",
+    "funded": "reflect", "rejected": "reflect", "resubmitting": "reflect",
+}
+
+# (stage, pattern, kind, required). kind: "verdict" pulls the first
+# Verdict/Recommendation line; "files" counts non-stub files; "file" reports the
+# newest match. {ext} is the manuscript extension from grant.format. Patterns may
+# list alternatives with "|". Only required artifacts count as gaps; a required
+# value may name a conditional rule instead of True/False. Order within a stage
+# is the order the next step is recommended in.
+ARTIFACTS = [
+    ("frame", ".grantstack/grant-fit.md", "verdict", True),
+    ("frame", ".grantstack/big-idea.md", "verdict", True),
+    ("frame", ".grantstack/call-spec.md", "file", True),
+    ("frame", ".grantstack/scope-challenge-*.md", "verdict", False),
+    ("frame", ".grantstack/idea-shotgun-*.md", "file", False),
+    ("position", "proposal/sections/state-of-art.{ext}", "file", True),
+    ("position", ".grantstack/state-of-art-notes.md", "file", False),
+    ("position", ".grantstack/groundbreaking-test-*.md", "verdict", True),
+    ("position", "proposal/sections/objectives.{ext}", "file", True),
+    ("position", ".grantstack/risk-register.md", "file", True),
+    ("design", "proposal/sections/workpackages.{ext}", "file", True),
+    ("design", ".grantstack/wp-plan.md", "file", False),
+    ("design", "proposal/sections/methodology.{ext}", "file", True),
+    ("design", ".grantstack/team-plan.md", "file", True),
+    ("design", "budget/budget.md", "file", True),
+    ("design", "proposal/sections/impact.{ext}", "file", "nwo"),
+    ("write", "proposal/sections/synopsis.{ext}", "file", True),
+    ("write", "proposal/sections/feasibility.{ext}", "file", True),
+    ("write", "proposal/sections/pi-track-record.{ext}", "file", True),
+    ("write", "proposal/sections/data-management.{ext}", "file", True),
+    ("write", "proposal/sections/ethics.{ext}", "file", True),
+    ("write", "proposal/sections/lay-summary.{ext}", "file", False),
+    ("write", ".grantstack/title-shotgun-*.md", "file", False),
+    ("stress-test", ".grantstack/audits/*-feasibility.md", "verdict", True),
+    ("stress-test", ".grantstack/review-cache/panel-mock-*.md", "verdict", True),
+    ("stress-test", ".grantstack/review-cache/mentor-*.md", "verdict", False),
+    ("stress-test", ".grantstack/call-spec-audit-*.md", "verdict", True),
+    ("submit", "admin/submission-checklist.md", "file", True),
+    ("submit", "admin/eligibility.md|admin/host-support.md", "files", False),
+    ("defend", "reviews/received/*.md|reviews/received/*.pdf", "files", False),
+    ("defend", "reviews/rebuttal/*-rebuttal.md", "file", "nwo-reports"),
+    ("defend", "reviews/interview/qbank.md", "file", "interview"),
+    ("defend", "reviews/interview/pitch.md", "file", False),
+    ("reflect", ".grantstack/retro.md", "verdict", True),
+    ("reflect", ".grantstack/resubmit-plan.md", "file", False),
+]
+
+# The skill that produces each artifact, for the next-step recommendation.
+ARTIFACT_SKILL = {
+    ".grantstack/grant-fit.md": "grant-fit",
+    ".grantstack/big-idea.md": "big-idea",
+    ".grantstack/call-spec.md": "call-spec capture",
+    ".grantstack/scope-challenge-*.md": "scope-challenge",
+    ".grantstack/idea-shotgun-*.md": "idea-shotgun",
+    "proposal/sections/state-of-art.{ext}": "state-of-art",
+    ".grantstack/state-of-art-notes.md": "state-of-art",
+    ".grantstack/groundbreaking-test-*.md": "groundbreaking-test",
+    "proposal/sections/objectives.{ext}": "objectives",
+    ".grantstack/risk-register.md": "risk-register",
+    "proposal/sections/workpackages.{ext}": "workpackage",
+    ".grantstack/wp-plan.md": "workpackage",
+    "proposal/sections/methodology.{ext}": "methodology",
+    ".grantstack/team-plan.md": "team-resources",
+    "budget/budget.md": "budget",
+    "proposal/sections/impact.{ext}": "impact",
+    "proposal/sections/synopsis.{ext}": "draft-section synopsis",
+    "proposal/sections/feasibility.{ext}": "draft-section feasibility",
+    "proposal/sections/pi-track-record.{ext}": "track-record",
+    "proposal/sections/data-management.{ext}": "draft-section data-management",
+    "proposal/sections/ethics.{ext}": "draft-section ethics",
+    "proposal/sections/lay-summary.{ext}": "lay-summary",
+    ".grantstack/title-shotgun-*.md": "title-shotgun",
+    ".grantstack/audits/*-feasibility.md": "feasibility-audit",
+    ".grantstack/review-cache/panel-mock-*.md": "panel-mock",
+    ".grantstack/review-cache/mentor-*.md": "mentor-review",
+    ".grantstack/call-spec-audit-*.md": "call-spec audit",
+    "admin/submission-checklist.md": "admin-pack",
+    "admin/eligibility.md|admin/host-support.md": "admin-pack",
+    "reviews/rebuttal/*-rebuttal.md": "rebuttal",
+    "reviews/interview/qbank.md": "interview-prep",
+    "reviews/interview/pitch.md": "interview-prep",
+    ".grantstack/retro.md": "retro",
+    ".grantstack/resubmit-plan.md": "resubmit",
+}
+
+# An artifact is stale when any of these inputs is newer than the newest
+# matching file. One-way edges only: a two-way edge would make a pair stale in
+# alternation forever.
+STALE_INPUTS = {
+    ".grantstack/big-idea.md": [".grantstack/grant-fit.md", ".grantstack/idea-shotgun-*.md"],
+    ".grantstack/scope-challenge-*.md": [".grantstack/big-idea.md"],
+    ".grantstack/call-spec.md": ["admin/call/*"],
+    "proposal/sections/state-of-art.*": [".grantstack/big-idea.md"],
+    ".grantstack/groundbreaking-test-*.md": [".grantstack/big-idea.md", "proposal/sections/state-of-art.*"],
+    "proposal/sections/objectives.*": [".grantstack/big-idea.md", ".grantstack/groundbreaking-test-*.md",
+                                       "proposal/sections/state-of-art.*"],
+    ".grantstack/risk-register.md": ["proposal/sections/objectives.*"],
+    "proposal/sections/workpackages.*": ["proposal/sections/objectives.*", ".grantstack/risk-register.md"],
+    "proposal/sections/methodology.*": ["proposal/sections/objectives.*", "proposal/sections/workpackages.*",
+                                        ".grantstack/risk-register.md"],
+    ".grantstack/team-plan.md": ["proposal/sections/workpackages.*", ".grantstack/wp-plan.md"],
+    "budget/budget.md": [".grantstack/team-plan.md", "proposal/sections/workpackages.*",
+                         ".grantstack/call-spec.md"],
+    "proposal/sections/impact.*": ["proposal/sections/objectives.*", ".grantstack/big-idea.md",
+                                   ".grantstack/call-spec.md"],
+    "proposal/sections/synopsis.*": ["proposal/sections/objectives.*", ".grantstack/big-idea.md",
+                                     ".grantstack/groundbreaking-test-*.md"],
+    "proposal/sections/feasibility.*": [".grantstack/risk-register.md", ".grantstack/team-plan.md",
+                                        ".grantstack/wp-plan.md"],
+    "proposal/sections/pi-track-record.*": ["cv/track-record.md", ".grantstack/big-idea.md",
+                                            ".grantstack/call-spec.md"],
+    "proposal/sections/lay-summary.*": ["proposal/sections/synopsis.*", ".grantstack/big-idea.md"],
+    ".grantstack/title-shotgun-*.md": ["proposal/sections/synopsis.*", ".grantstack/big-idea.md"],
+    ".grantstack/audits/*-feasibility.md": ["proposal/sections/objectives.*", "proposal/sections/workpackages.*",
+                                            "proposal/sections/feasibility.*", "budget/budget.md",
+                                            ".grantstack/team-plan.md", ".grantstack/risk-register.md",
+                                            ".grantstack/wp-plan.md"],
+    ".grantstack/review-cache/panel-mock-*.md": ["proposal/sections/*", "cv/track-record.md",
+                                                 "budget/budget.md", ".grantstack/call-spec.md"],
+    ".grantstack/review-cache/mentor-*.md": ["proposal/sections/*", "cv/track-record.md",
+                                             "budget/budget.md", ".grantstack/call-spec.md"],
+    ".grantstack/call-spec-audit-*.md": [".grantstack/call-spec.md", "proposal/main.tex",
+                                         "proposal/sections/*", "budget/budget.md", "cv/track-record.md"],
+    "admin/submission-checklist.md": [".grantstack/call-spec.md", "budget/budget.md",
+                                      "proposal/sections/data-management.*", "proposal/sections/ethics.*"],
+    "reviews/rebuttal/*-rebuttal.md": ["reviews/received/*"],
+    "reviews/interview/qbank.md": [".grantstack/review-cache/panel-mock-*.md",
+                                   "reviews/rebuttal/*-rebuttal.md", "reviews/received/*"],
+    ".grantstack/retro.md": ["reviews/received/*", ".grantstack/review-cache/*"],
+    ".grantstack/resubmit-plan.md": [".grantstack/retro.md", "reviews/received/*"],
+}
+
+STUB_MARKER = "writes here"
+THIN_CHARS = 250          # non-comment chars below which a real artifact is suspicious
+SECTION_CHARS = 1000      # a drafted proposal section is longer than this
+
+
+def find_project(start: Path):
+    p = start.resolve()
+    for c in [p, *p.parents]:
+        if (c / ".grantstack").is_dir():
+            return c
+    return None
+
+
+def read_config(project: Path) -> dict:
+    """Minimal reader for the config.yaml keys status needs (no PyYAML)."""
+    cfg = {"scheme": "", "acronym": "", "title": "", "short_name": "", "status": "",
+           "format": "", "call_deadline": "", "name": "", "amount": "", "currency": "",
+           "duration_months": "", "writing_style": ""}
+    try:
+        lines = (project / ".grantstack" / "config.yaml").read_text().splitlines()
+    except OSError:
+        return cfg
+    section = None
+    for raw in lines:
+        if not raw.strip() or raw.lstrip().startswith("#"):
+            continue
+        indent = len(raw) - len(raw.lstrip())
+        line = raw.split(" #")[0].strip()
+        if indent == 0:
+            section = line.rstrip(":") if line.endswith(":") else None
+            continue
+        key, _, value = line.partition(":")
+        key, value = key.strip().lstrip("- ").strip(), value.strip().strip("\"'")
+        if section == "grant" and key in cfg:
+            cfg[key] = value
+        elif section == "pi" and key == "name":
+            cfg["name"] = value
+        elif section == "budget" and key in ("amount", "currency", "duration_months"):
+            cfg[key] = value
+        elif section == "voice" and key == "writing_style":
+            cfg[key] = value
+    return cfg
+
+
+def ext_of(cfg) -> str:
+    return "md" if cfg.get("format", "").lower() == "markdown" else "tex"
+
+
+def expand(pattern: str, ext: str) -> str:
+    return pattern.replace("{ext}", ext)
+
+
+def _repetitive(lines) -> bool:
+    """Placeholder text is often one line or sentence pasted several times."""
+    sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", " ".join(lines)) if s.strip()]
+    for units in (lines, sentences):
+        if len(units) >= 4 and len(set(units)) / len(units) <= 0.5:
+            return True
+    return False
+
+
+def content_state(path: Path, min_chars: int = THIN_CHARS) -> str:
+    """'stub' (template placeholder or empty), 'thin' (too small or too
+    repetitive to be a real artifact of its kind; open it before trusting it),
+    or 'present'."""
+    try:
+        text = path.read_text(errors="ignore")
+    except OSError:
+        return "stub"
+    if STUB_MARKER in text:
+        return "stub"
+    suffix = path.suffix.lower()
+    if suffix in (".tex", ".md", ".txt", ".yaml", ".jsonl"):
+        body = []
+        for line in text.splitlines():
+            s = line.strip()
+            if not s or s.startswith(("%", "<!--")) or (s.startswith("#") and suffix != ".md"):
+                continue
+            body.append(s)
+        n = len(" ".join(body))
+        if n < 40:
+            return "stub"
+        return "thin" if n < min_chars or _repetitive(body) else "present"
+    try:
+        size = path.stat().st_size
+    except OSError:
+        return "stub"
+    return "stub" if size == 0 else "thin" if size < min_chars else "present"
+
+
+def is_stub(path: Path) -> bool:
+    return content_state(path) != "present"
+
+
+def verdict_line(path: Path) -> str:
+    """First Verdict/Recommendation line; if that line is only a heading, the line after it."""
+    def clean(s):
+        return re.sub(r"\s+", " ", re.sub(r"[*#_`>\-\[\]]+", " ", s)).strip()
+    try:
+        lines = [l for l in path.read_text(errors="ignore").splitlines() if l.strip()]
+    except OSError:
+        return ""
+    for i, line in enumerate(lines):
+        if re.search(r"\b(verdict|recommendation)\b", line, re.I):
+            text = clean(line)
+            if re.fullmatch(r"(?i)(the )?(verdict|recommendation):?", text) and i + 1 < len(lines):
+                text = f"{text.rstrip(':')}: {clean(lines[i + 1])}"
+            return text[:90]
+    return ""
+
+
+def mtime(path: Path) -> float:
+    try:
+        return path.stat().st_mtime
+    except OSError:
+        return 0.0
+
+
+def day(ts: float) -> str:
+    return dt.date.fromtimestamp(ts).isoformat() if ts else ""
+
+
+def matches(project: Path, pattern: str):
+    hits = [Path(p) for alt in pattern.split("|") for p in glob.glob(str(project / alt))]
+    return sorted((h for h in hits if h.is_file() and h.name != ".gitkeep"), key=mtime)
+
+
+def is_required(rule, project: Path, cfg: dict) -> bool:
+    """True/False, or a named conditional rule."""
+    if rule in (True, False):
+        return rule
+    scheme = cfg.get("scheme", "").lower()
+    if rule == "nwo":
+        return scheme.startswith("nwo")
+    if rule == "nwo-reports":
+        return scheme.startswith("nwo") and bool(matches(project, "reviews/received/*"))
+    if rule == "interview":
+        return cfg.get("status", "") == "interview"
+    return False
+
+
+def inventory(project: Path, cfg: dict):
+    ext = ext_of(cfg)
+    rows, present_by_stage = [], {s: False for s in STAGES}
+    for stage, pattern, kind, required_rule in ARTIFACTS:
+        pat = expand(pattern, ext)
+        required = is_required(required_rule, project, cfg)
+        min_chars = SECTION_CHARS if pat.startswith("proposal/sections/") else THIN_CHARS
+        files = matches(project, pat)
+        row = {"stage": stage, "artifact": pat, "required": required,
+               "state": "missing" if required else "optional", "date": "", "note": "",
+               "skill": ARTIFACT_SKILL.get(pattern, "")}
+        if files:
+            newest = files[-1]
+            row["date"] = day(mtime(newest))
+            if kind == "files":
+                real = [f for f in files if content_state(f, min_chars) == "present"]
+                row["state"] = f"{len(real)} file{'s' if len(real) != 1 else ''}" if real else "stub"
+                if real:
+                    present_by_stage[stage] = True
+            else:
+                state = content_state(newest, min_chars)
+                row["state"] = state
+                if state == "present":
+                    present_by_stage[stage] = True
+                    if kind == "verdict":
+                        row["note"] = verdict_line(newest)
+                elif state == "thin":
+                    row["note"] = "too small or repetitive to be a real artifact; open it before trusting it"
+                if len(files) > 1:
+                    row["note"] = (row["note"] + f" ({len(files)} files; newest shown)").strip()
+        rows.append(row)
+    return rows, present_by_stage
+
+
+def stale_artifacts(project: Path, cfg: dict):
+    ext = ext_of(cfg)
+    out = []
+    for pattern, inputs in STALE_INPUTS.items():
+        files = [f for f in matches(project, expand(pattern, ext)) if content_state(f) != "stub"]
+        if not files:
+            continue
+        newest = files[-1]
+        for inp in inputs:
+            for f in matches(project, expand(inp, ext)):
+                if f == newest:
+                    continue
+                if content_state(f) != "stub" and mtime(f) > mtime(newest) + 1:
+                    out.append({"artifact": str(newest.relative_to(project)),
+                                "artifact_date": day(mtime(newest)),
+                                "input": str(f.relative_to(project)),
+                                "input_date": day(mtime(f))})
+    return out
+
+
+def derived_stage(present_by_stage):
+    stage = None
+    for s in STAGES:
+        if present_by_stage[s]:
+            stage = s
+    return stage or "frame"
+
+
+def gaps_before(rows, stage):
+    """Missing/stub/thin required artifacts in stages up to and including `stage`."""
+    upto = STAGES[: STAGES.index(stage) + 1]
+    return [r for r in rows
+            if r["required"] and r["stage"] in upto and r["state"] in ("missing", "stub", "thin")]
+
+
+def next_step(rows, gaps, horizon):
+    """Earliest required gap wins; with none, the next stage's first required artifact."""
+    if gaps:
+        g = gaps[0]
+        return {"skill": g["skill"], "artifact": g["artifact"],
+                "why": f"{g['stage']} needs {g['artifact']} ({g['state']})"}
+    idx = STAGES.index(horizon)
+    for stage in STAGES[idx + 1:]:
+        for r in rows:
+            if r["stage"] == stage and r["required"]:
+                return {"skill": r["skill"], "artifact": r["artifact"],
+                        "why": f"{stage} is next; it starts with {r['artifact']}"}
+    return {"skill": "", "artifact": "", "why": "every required artifact is in place"}
+
+
+def main(argv=None):
+    args = [a for a in (argv or sys.argv[1:])]
+    as_json = "--json" in args
+    args = [a for a in args if a != "--json"]
+    start = Path(args[0]) if args else Path.cwd()
+    project = find_project(start)
+    if project is None:
+        print(f"No .grantstack/ found at or above {start.resolve()}; "
+              f"run /grantstack:grantstack-init first.", file=sys.stderr)
+        return 1
+
+    cfg = read_config(project)
+    rows, present_by_stage = inventory(project, cfg)
+    stale = stale_artifacts(project, cfg)
+
+    # The call as published is newer than the spec captured from it.
+    calls = [f for f in matches(project, "admin/call/*") if content_state(f) != "stub"]
+    specs = matches(project, ".grantstack/call-spec.md")
+    if calls and (not specs or mtime(calls[-1]) > mtime(specs[-1]) + 1):
+        stale.append({"artifact": ".grantstack/call-spec.md",
+                      "artifact_date": day(mtime(specs[-1])) if specs else "missing",
+                      "input": str(calls[-1].relative_to(project)),
+                      "input_date": day(mtime(calls[-1])),
+                      "note": "the call in admin/call/ is newer than the spec captured from it: "
+                              "run /grantstack:call-spec recapture",
+                      "kind": "call-newer"})
+
+    # Reports arrived after the last rebuttal / retro.
+    received = matches(project, "reviews/received/*")
+    answered = matches(project, "reviews/rebuttal/*-rebuttal.md") + matches(project, ".grantstack/retro.md")
+    if received and answered and mtime(received[-1]) > mtime(sorted(answered, key=mtime)[-1]) + 1:
+        stale.append({"artifact": "reviews/rebuttal/ + .grantstack/retro.md",
+                      "artifact_date": day(mtime(sorted(answered, key=mtime)[-1])),
+                      "input": str(received[-1].relative_to(project)),
+                      "input_date": day(mtime(received[-1])),
+                      "note": "reports received after the last rebuttal/retro were never answered",
+                      "kind": "reports-newer"})
+
+    stage = derived_stage(present_by_stage)
+    cfg_stage = STATUS_STAGE.get(cfg["status"], "")
+    horizon = stage
+    if cfg_stage and STAGES.index(cfg_stage) > STAGES.index(stage):
+        horizon = cfg_stage
+    gaps = gaps_before(rows, horizon)
+    nxt = next_step(rows, gaps, horizon)
+    gap_labels = [f"{g['stage']}: {g['artifact']}" for g in gaps]
+
+    result = {
+        "project": str(project), "config": cfg, "artifacts": rows, "stale": stale,
+        "derived_stage": stage, "config_stage": cfg_stage, "horizon": horizon,
+        "status_matches": (cfg_stage == stage) if cfg_stage else None,
+        "gaps": gap_labels, "next_step": nxt,
+    }
+    if as_json:
+        print(json.dumps(result, indent=2))
+        return 0
+
+    name = cfg["acronym"] or cfg["title"] or cfg["short_name"] or project.name
+    budget = f"{cfg['amount']} {cfg['currency']}".strip() if cfg["amount"] else "?"
+    print(f"GrantStack status: {name}")
+    print(f"  folder {project}")
+    print(f"  config: status={cfg['status'] or '?'} (stage {cfg_stage or '?'}) · scheme={cfg['scheme'] or '?'} "
+          f"· deadline={cfg['call_deadline'] or '?'} · budget={budget}/{cfg['duration_months'] or '?'}mo "
+          f"· format={cfg['format'] or '?'} · writing_style={cfg['writing_style'] or '(none)'}")
+    print()
+    print(f"{'STAGE':12} {'ARTIFACT':44} {'STATE':9} {'DATE':11} NOTE   "
+          f"(optional = not required; thin = present but suspiciously small)")
+    for r in rows:
+        print(f"{r['stage']:12} {r['artifact']:44} {r['state']:9} {r['date']:11} {r['note']}")
+    print()
+    if stale:
+        print("STALE (an input changed after this file was written):")
+        for s in stale:
+            if s.get("note"):
+                print(f"  - {s['note']} ({s['input']} {s['input_date']})")
+            else:
+                print(f"  - {s['artifact']} ({s['artifact_date']}) predates {s['input']} ({s['input_date']})")
+    else:
+        print("STALE: none")
+    print()
+    agree = "matches config" if cfg_stage == stage else \
+        f"config says {cfg['status'] or '?'} (stage {cfg_stage or '?'}) — MISMATCH"
+    print(f"DERIVED STAGE: {stage} — {agree}")
+    if horizon != stage:
+        print(f"  (config is ahead of the folder; working to stage {horizon})")
+    if cfg["status"] == "resubmitting":
+        print("  (resubmitting: the next step is the first unfinished item in "
+              ".grantstack/resubmit-plan.md, and the stale list is the gap list)")
+    if gap_labels:
+        print("GAPS UP TO THAT STAGE (earliest gap wins for the next-step recommendation):")
+        for g in gap_labels:
+            print(f"  - {g}")
+    if nxt["skill"]:
+        print(f"NEXT: /grantstack:{nxt['skill']} — {nxt['why']}")
+    else:
+        print(f"NEXT: {nxt['why']}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

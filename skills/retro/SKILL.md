@@ -1,49 +1,48 @@
 ---
 name: retro
-description: Proposal retrospective after the outcome (funded or rejected) — what worked, what took longest, what to systematize for next time, and what the reviews actually told you. Writes .grantstack/retro.md. Analog to MStack's /retro.
-user-invocable: true
+description: Runs the post-decision retrospective — the timeline, where the mock reviews predicted the real ones and where you were blindsided, which criticisms recurred, and what to systematize — then calls resubmit or retarget. Use after the outcome is known, funded or not; the reviews are the most honest signal you will get about your profile and framing.
 allowed-tools:
   - Read
   - Write
-  - Bash(date *)
+  - Edit
   - Glob
+  - Grep
+  - Bash(date *)
+  - Bash(python3 *)
+  - Bash(git log *)
 ---
 
 # /grantstack:retro
 
-**Stage:** reflect
-**Voice:** coach
+**Stage:** reflect · **Voice:** coach
 
-## When to invoke
-
-After the decision, funded or not. Big-grant writing is a multi-year, multi-attempt game; the value of a retrospective is compounding. Reviews — especially of a rejection — are the most honest signal you'll get about your profile and framing.
+Big-grant writing is a multi-year, multi-attempt game, so the value of a retrospective compounds. A rejection's reviews are the most honest signal you will get.
 
 ## Procedure
 
-1. **Load.** `.grantstack/config.yaml` (status, scheme), the referee reports and `reviews/`, `.grantstack/review-cache/*`, `.grantstack/decisions.log`, and the outcome.
+1. **Load the record.** Run `python3 "${CLAUDE_PLUGIN_ROOT}/bin/grantstack-status"` for the dated artifact table rather than opening every memo, and `git log --reverse --date=short --format='%ad %s'` if the folder is a git repo. Then read `reviews/received/*` (the reports as they arrived), `reviews/rebuttal/*`, `.grantstack/review-cache/*`, and the `decisions:` list in `.grantstack/config.yaml`.
+2. **Ask the outcome** if it is not already clear — funded, rejected, or still pending — and do not guess it from the files.
+3. **Reconstruct the timeline.** When each stage happened, the longest pole, where time evaporated. The track-record narrative and the host letter are the usual sinks.
+4. **Compare predicted against actual.** Where did `/grantstack:panel-mock` and `/grantstack:mentor-review` anticipate the real referees, and where were you blindsided? The gaps are where your self-assessment is weak, and that is the most useful finding in the document.
+5. **Separate signal from noise.** Which criticisms recurred across referees (signal) and which were one-off (noise)? Which were about the project, which about the person, which about framing? Be honest about which are fixable and which are about timing or profile. Even an unfair review contains a signal about how the proposal reads.
+6. **Extract systematizable lessons** — what you would template, start earlier, or do differently regardless of this project. "Start earlier" is not a lesson; "draft the track-record narrative in month 1, not week −2" is.
+7. **Write `.grantstack/retro.md`**: the verdict line, then timeline, predicted-versus-actual, review signal, and lessons.
 
-2. **Reconstruct the timeline.** When did each stage happen, what was the longest pole, where did time evaporate? (Track record narrative and letters are common time sinks.)
+   **Verdict:** **Funded — lessons**, **Resubmit**, or **Retarget**, with a one-line reason.
 
-3. **Compare predicted vs. actual review.** Where did `/panel-mock` and `/mentor-review` correctly anticipate the real referees, and where were you blindsided? The gaps are where your self-assessment is weak — the most useful finding.
-
-4. **Separate signal from noise in the reviews.** Which criticisms recurred across referees (signal) vs. one-off (noise)? Which were about the project, which about the person, which about framing? Be honest about which are fixable and which are about timing/profile.
-
-5. **Extract systematizable lessons.** What would you template, start earlier, or do differently regardless of this project? These are candidates for `/learn` (per-proposal) or your global memory (across proposals).
-
-6. **Write `.grantstack/retro.md`**: timeline, predicted-vs-actual, review signal, lessons, and — if rejected — a one-line read on whether this is a resubmit (→ `/resubmit`) or a retarget.
+   Set `grant.status` to `funded` or `rejected` in `.grantstack/config.yaml` per the outcome the user gave, if it still says `submitted`, `rebuttal`, or `interview`.
 
 ## Outputs
 
-- `.grantstack/retro.md`.
-- Summary block: the top 3 lessons, the biggest blind spot the reviews exposed, and the resubmit/retarget call.
+- `.grantstack/retro.md` — verdict, timeline, predicted-versus-actual, signal, lessons.
+- Summary block: the top three lessons, the biggest blind spot the reviews exposed, and the resubmit-or-retarget call.
 
-## Anti-patterns to refuse
+## Anti-patterns
 
-- **Blaming the reviewers.** Even an unfair review contains a signal about how the proposal reads. Find it.
-- **Lessons too vague to act on.** "Start earlier" → "draft the track-record narrative in month 1, not week -2."
-- **Skipping retro after a win.** Funded proposals teach what worked; capture it before you forget.
+- **Blaming the reviewers.** Even an unfair review says something about how the proposal reads; find it.
+- **Lessons too vague to act on.**
+- **Skipping the retro after a win.** Funded proposals teach what worked; capture it before you forget.
 
-## When to call other skills
+## Next
 
-- After (if rejected and resubmitting): `/resubmit`.
-- Throughout: `/learn` to persist per-proposal lessons; promote cross-proposal lessons to global memory.
+`/grantstack:resubmit` if the verdict is resubmit; `/grantstack:learn` to persist the per-proposal lessons, and your global memory for the ones that cross proposals.

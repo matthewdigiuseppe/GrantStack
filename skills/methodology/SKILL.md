@@ -1,7 +1,6 @@
 ---
 name: methodology
-description: Drafts the methodology/approach section so it convinces the in-field referee it's sound and the generalist panel it's feasible. Ties each method to an objective and a work package. Writes proposal/sections/methodology.tex. Never invents citations.
-user-invocable: true
+description: Drafts the approach so the in-field referee judges it sound and the generalist panel finds it legible — each method tied to an objective and a work package, the novel core separated from the standard scaffolding, and validation stated. Writes proposal/sections/methodology.tex. Use after the objectives and work packages exist. Never invents citations.
 allowed-tools:
   - Read
   - Write
@@ -13,42 +12,30 @@ allowed-tools:
 
 # /grantstack:methodology
 
-**Stage:** design
-**Voice:** methodologist writing for two readers at once
+**Stage:** design · **Voice:** methodologist writing for two readers at once
 
-## When to invoke
-
-After objectives and work packages exist. The methodology is where the in-field referee decides whether you can actually do this, and where the generalist panel decides whether to trust you that you can. It must satisfy both: rigorous enough for the expert, legible enough for the non-expert.
+The methodology is where the in-field referee decides whether you can do this and the generalist panel decides whether to trust you that you can. It must be rigorous enough for the expert and legible enough for the non-expert.
 
 ## Procedure
 
-1. **Load.** `proposal/sections/objectives.tex`, `proposal/sections/workpackages.tex`, `.grantstack/risk-register.md`, `.grantstack/config.yaml`, `proposal/refs.bib`.
-
-2. **For each objective/WP, specify the approach:**
-   - The method, concretely — design, instruments, data, analysis. Enough that a referee can judge validity.
-   - Why *this* method and not the obvious alternative (pre-empt the "why not X?" comment).
-   - What established technique you stand on (cite `refs.bib`; mark gaps as `\cite{TODO-...}`) versus what you advance — the line between safe scaffolding and the novel core.
-   - Validation: how you'll know the method worked (controls, benchmarks, ground truth).
-
-3. **Make the hard part legible.** For the most technical step, add one or two sentences a generalist can follow — an analogy or a plain-language gloss — without dumbing down the expert version. This is the two-readers discipline.
-
-4. **Connect to feasibility.** Each method's resource and time demand should be consistent with the WP timeline and the budget. Note where a method is pilot-tested before full commitment (links to risk-register decision points).
-
-5. **Write `proposal/sections/methodology.tex`.** Organized by objective or WP (match whichever the proposal uses elsewhere — keep numbering consistent). Tight, specific, citation-grounded.
+1. **Load** `proposal/sections/objectives.tex`, `proposal/sections/workpackages.tex`, `.grantstack/risk-register.md`, `.grantstack/config.yaml`, `.grantstack/learnings.jsonl`, the methodology bar in `${CLAUDE_PLUGIN_ROOT}/references/proposal-conventions.md`, and the citable keys of `proposal/refs.bib` (`grep -o '^@[A-Za-z]*{[^,]*' proposal/refs.bib`) rather than the whole bibliography.
+2. **For each objective or WP, specify the approach:** the method concretely (design, instruments, data, analysis) in enough detail for a referee to judge validity; why *this* method and not the obvious alternative, pre-empting the "why not X?" comment; which established technique you stand on versus what you advance — the line between safe scaffolding and the novel core; and how you will know the method worked (controls, benchmarks, ground truth).
+3. **Make the hard part legible.** For the most technical step add one or two sentences a generalist can follow — an analogy or a plain-language gloss — without dumbing down the expert version. This is the two-readers discipline in one paragraph.
+4. **Connect to feasibility.** Each method's resource and time demand must be consistent with the WP timeline and the budget. Note where a method is pilot-tested before full commitment, matching the risk register's decision points.
+5. **Write `proposal/sections/methodology.tex`**, organized by objective or WP — whichever the proposal uses elsewhere; keep the numbering consistent. Cite only keys in `refs.bib`; mark gaps `\cite{TODO-...}` (`[@TODO-...]` in markdown format) and never invent a technique's properties.
 
 ## Outputs
 
 - `proposal/sections/methodology.tex`.
-- Summary block: per-objective method, the single novel methodological core, and any `refs.bib` entries to add.
+- Summary block: the per-objective method, the single novel methodological core, and any `refs.bib` entries to add.
 
-## Anti-patterns to refuse
+## Anti-patterns
 
-- **Fabricating citations or methods.** Mark missing refs as TODO; never invent a technique's properties.
-- **A methods wall with no legibility for the panel.** The generalist decides funding; lost them and the rigour doesn't matter.
-- **Hiding the novel core in jargon.** The expert needs to see exactly where you go beyond the standard toolkit — that's the part they score.
+- **Fabricating citations or method properties.** Mark missing refs TODO.
+- **A methods wall with no legibility for the panel.** The generalist decides funding; lose them and the rigour does not matter.
+- **Hiding the novel core in jargon.** The expert needs to see exactly where you go beyond the standard toolkit — that is the part they score.
 - **Methods unmoored from objectives.** Every method serves an objective; every objective has a method.
 
-## When to call other skills
+## Next
 
-- Before: `/objectives`, `/workpackage`.
-- After: `/feasibility-audit` (does the approach close in time and money), `/draft-section` for surrounding sections.
+`/grantstack:feasibility-audit` (does the approach close in time and money), and `/grantstack:draft-section` for the sections around it.

@@ -1,55 +1,42 @@
 ---
 name: title-shotgun
-description: Generates project acronym + title options, ranked on memorability, precision, and panel-appeal. Grants live and die on a memorable acronym a panel repeats in the room. Use late, once the framing is locked. Writes to .grantstack/title-shotgun-<date>.md and can stamp the chosen pair into config. Analog to MStack's /title-shotgun.
-user-invocable: true
+description: Generates 5-8 acronym-and-title pairs ranked on memorability, precision, pronounceability and fit, checks each for collisions with known projects or unfortunate readings, and can stamp the chosen pair into config. Use late, once the framing is locked — the acronym is how a panel refers to the proposal in the room.
 allowed-tools:
   - Read
   - Write
   - Edit
+  - WebSearch
+  - WebFetch
   - Bash(date *)
 ---
 
 # /grantstack:title-shotgun
 
-**Stage:** write
-**Voice:** writer
+**Stage:** write · **Voice:** writer
 
-## When to invoke
-
-Once the breakthrough framing is settled. A grant's acronym is how the panel refers to it during deliberation — "the QUANTA proposal" is an asset; an unmemorable one makes you the proposal they can't quite place. The title must be precise enough for the record and vivid enough to stick.
+"The QUANTA proposal" is an asset; an unmemorable acronym makes you the proposal the panel cannot quite place. The title must be precise enough for the record and vivid enough to stick.
 
 ## Procedure
 
-1. **Load.** `.grantstack/big-idea.md`, `proposal/sections/synopsis.tex`, `.grantstack/config.yaml` (current acronym/title, scheme).
-
-2. **Generate 5-8 candidate pairs.** Each is an acronym + a full title. Vary across:
-   - **Acronym derivation** — initials of the core concepts vs. an evocative word that encodes the mission.
-   - **Register** — sober/scientific vs. vivid/metaphorical (calibrate to the panel; some domains reward restraint).
-   - **Emphasis** — the phenomenon, the method, or the ambition.
-
-3. **Score each pair on four axes (qualitatively):**
-   - **Memorable** — will a panellist recall it a day later?
-   - **Precise** — does the full title say what the project does without overclaiming?
-   - **Pronounceable / clean** — no awkward or unfortunate readings; check it's not an existing well-known project or product.
-   - **Fit** — matches the scheme's tone and the field's norms.
-
-4. **Rank** and surface the top 2-3 with a one-line case each.
-
-5. **Save** to `.grantstack/title-shotgun-<YYYY-MM-DD>.md`. If the user picks one, offer to write it into `.grantstack/config.yaml` → `grant.acronym` / `grant.title` (ask before overwriting non-empty).
+1. **Load** `.grantstack/big-idea.md`, `proposal/sections/synopsis.tex`, `.grantstack/config.yaml` (current acronym and title, scheme).
+2. **Generate 5-8 candidate pairs**, each an acronym plus a full title, varying across: **derivation** (initials of the core concepts vs. an evocative word that encodes the mission), **register** (sober and scientific vs. vivid and metaphorical — calibrate to the panel, since some domains reward restraint), and **emphasis** (the phenomenon, the method, or the ambition).
+3. **Score each pair** qualitatively on four axes: **memorable** (will a panellist recall it a day later?), **precise** (does the title say what the project does without overclaiming?), **pronounceable and clean**, and **fit** with the scheme's tone and the field's norms.
+4. **Run the collision check.** Search for each shortlisted acronym: an existing well-known project, a gene, a product, a company, or an unfortunate word or reading in any language the panel speaks. Report what you find; an acronym that collides with a famous project is one a panel will misattribute.
+5. **Rank** and surface the top two or three with a one-line case each.
+6. **Save** to `.grantstack/title-shotgun-<YYYY-MM-DD>.md` (date from `date +%F`). If the user picks one, write it into `grant.acronym` and `grant.title` in `.grantstack/config.yaml`, editing in place and asking before overwriting non-empty values, and append the choice to `decisions:`. Config is where every section reads the acronym from — do not park it in `learnings.jsonl`.
 
 ## Outputs
 
-- `.grantstack/title-shotgun-<date>.md` — all pairs with scores.
-- Optionally update `config.yaml` acronym/title.
-- Summary block: top 2-3 pairs + recommendation.
+- `.grantstack/title-shotgun-<date>.md` — every pair with its scores and collision findings.
+- `grant.acronym` and `grant.title` in `.grantstack/config.yaml`, on the user's say-so.
+- Summary block: the top two or three pairs and the recommendation.
 
-## Anti-patterns to refuse
+## Anti-patterns
 
-- **A forced acronym** where the title is tortured to fit the letters. The title must read naturally; the acronym serves it, not the reverse.
-- **Overclaiming titles.** "Solving X" invites the skeptic; "A new route to X" is bolder-sounding and safer.
-- **Skipping the collision check.** Flag if a candidate clashes with a famous project, gene, product, or an unfortunate word.
+- **A forced acronym** where the title is tortured to fit the letters. The title reads naturally; the acronym serves it.
+- **Overclaiming titles.** "Solving X" invites the skeptic; "A new route to X" sounds bolder and is safer.
+- **Skipping the collision check.** Flag any clash with a famous project, gene, product, or unfortunate word.
 
-## When to call other skills
+## Next
 
-- Before: `/synopsis-shotgun` (the title should pair with the chosen hook).
-- After: stamp into config; reuse consistently via a `/learn` entry so every section uses the same acronym.
+Use the acronym consistently everywhere; `/grantstack:call-spec audit` checks that the proposal, budget, CV and annexes agree.

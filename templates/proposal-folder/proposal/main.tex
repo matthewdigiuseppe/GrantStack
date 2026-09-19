@@ -1,16 +1,18 @@
 % GrantStack proposal template.
-% /draft-section writes into sections/<name>.tex; this file just \input{}s them.
-% Page limits are scheme-specific — check your call. ERC CoG: B1 extended
-% synopsis <=5pp + B2 scientific proposal <=14pp. NWO VICI: see the call's
-% section limits. Trim to fit; the limit is a hard gate, not a target.
+% Section files are written by the skill that owns each one (see the
+% GrantStack docs); this file just \input{}s them.
+% Page limits, font, and margins are scheme- and year-specific: they live in
+% .grantstack/call-spec.md, captured from the actual call by
+% /grantstack:call-spec. Set them here to match, then keep them matching —
+% the limit is a hard gate, not a target.
 
 \documentclass[11pt]{article}
 \usepackage[margin=2cm]{geometry}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{enumitem}
-\usepackage[colorlinks=true,allcolors=blue]{hyperref}
 \usepackage{natbib}
+\usepackage[colorlinks=true,allcolors=blue]{hyperref}
 
 \title{ACRONYM --- TITLE}
 \author{PI NAME \\ HOST INSTITUTION}
@@ -40,6 +42,11 @@
 \input{sections/data-management}
 \input{sections/ethics}
 
+% sections/lay-summary.tex is deliberately not \input: the lay summary is a
+% submission-portal field, not part of this PDF.
+
+% plainnat ships with every TeX distribution; swap for the funder's own style
+% at submission time if the call specifies one.
 \bibliographystyle{plainnat}
 \bibliography{refs}
 

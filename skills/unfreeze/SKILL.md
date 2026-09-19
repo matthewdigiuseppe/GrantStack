@@ -1,7 +1,7 @@
 ---
 name: unfreeze
-description: Remove the edit lock set by /freeze. Confirms that writes outside the locked directory are allowed again.
-user-invocable: true
+description: Clears the /grantstack:freeze write lock; careful mode, if on, stays on.
+disable-model-invocation: true
 allowed-tools:
   - Read
   - Write
@@ -10,16 +10,14 @@ allowed-tools:
 
 # /grantstack:unfreeze
 
-**Stage:** power
-**Voice:** safety
+**Stage:** power · **Voice:** safety
 
 ## Procedure
 
 1. Read `.grantstack/safety.yaml`.
-2. Clear `freeze.path`.
-3. Print confirmation that writes are allowed everywhere again, plus the current state of `careful` (which is unchanged by `/unfreeze`).
+2. Remove the `freeze:` block (or empty its `path`); the guard hook stops denying outside writes as soon as no path is set.
+3. Confirm writes are allowed everywhere again and report the `careful` state, which this skill does not change.
 
 ## Outputs
 
-- `.grantstack/safety.yaml` updated.
-- Summary: lock cleared; `careful` state unchanged.
+- `.grantstack/safety.yaml` updated; summary: lock cleared, `careful` unchanged.
