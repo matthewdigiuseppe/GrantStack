@@ -2,7 +2,7 @@
 
 **A Claude Code plugin for big research-grant writing.** Sibling to [MStack](https://github.com/matthewdigiuseppe/MStack); inspired by [gstack](https://github.com/garrytan/gstack).
 
-gstack's wager is that role-based slash commands beat free-form prompting because they force the right questions at the right stage. MStack applied it to journal papers. GrantStack applies it to **big individual research grants** — ERC Starting / Consolidator / Advanced, NWO Veni / Vidi / Vici — where the artifact, the reader, and the bar are all different from a paper. A grant has clear stages — frame, position, design, write, stress-test, submit, defend, reflect — each with its own forcing questions, failure modes, and quality bar. GrantStack ships 35 skills that walk a proposal across all of them.
+gstack's wager is that role-based slash commands beat free-form prompting because they force the right questions at the right stage. MStack applied it to journal papers. GrantStack applies it to **big individual research grants** — ERC Starting / Consolidator / Advanced, NWO Veni / Vidi / Vici — where the artifact, the reader, and the bar are all different from a paper. A grant has clear stages — frame, position, design, write, stress-test, submit, defend, reflect — each with its own forcing questions, failure modes, and quality bar. GrantStack ships 36 skills that walk a proposal across all of them.
 
 Think ERC Consolidator and NWO Vici, but the spine generalizes to most large investigator-driven schemes (ANR, DFG, UKRI fellowships).
 
@@ -49,17 +49,21 @@ In Claude Code, type:
 
 You're done. From here you'd typically start with `/grantstack:grant-fit` then `/grantstack:big-idea`. Lost the thread later? `/grantstack:proposal-status` reads the folder and names the one next step.
 
-### Power-user alternative (optional, terminal users only)
+### Optional extra for terminal users: the command-line tools
 
-If you live in a Mac or Linux terminal and would rather run `grantstack-init` directly:
+GrantStack ships two scripts that are useful outside Claude Code: `grantstack-init` (scaffold a proposal) and `grantstack-status` (what stage a proposal is at). To run them directly from a Mac or Linux terminal, clone the repository and put its `bin/` on your PATH:
 
 ```bash
-git clone https://github.com/matthewdigiuseppe/GrantStack.git ~/.claude/plugins/grantstack
-cd ~/.claude/plugins/grantstack
+git clone https://github.com/matthewdigiuseppe/GrantStack.git ~/grantstack
+cd ~/grantstack
 ./setup
 ```
 
-`./setup` registers GrantStack with Claude Code and prints one line to paste into your shell config so `grantstack-init my-grant` works in any folder. Skip this if you installed via `/plugin install` above — it does the same job, and `/grantstack:grantstack-init` works either way.
+`./setup` makes the scripts executable and prints the one line to paste into your shell config. It does **not** register the skills: those come from the `/plugin install` above, which is what namespaces them as `/grantstack:<name>`. The two steps are complements, not alternatives, and you only need this one if you want the terminal commands.
+
+Do not clone into `~/.claude/plugins/` — that is where Claude Code keeps marketplace installs, and a clone there is a second copy of the plugin, so every command shows up twice.
+
+To update a clone later, run `bin/grantstack-upgrade` (or `/grantstack:grantstack-upgrade` in Claude Code); it pulls, lists what changed, and reminds you to run `/plugin marketplace update grantstack`.
 
 ## Workflow
 
